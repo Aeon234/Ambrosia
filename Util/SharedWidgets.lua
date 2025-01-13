@@ -682,7 +682,7 @@ do --EditMode
 		self.isSelected = false
 		self.Background:SetTexture("Interface/AddOns/Ambrosia/Media/Frame/EditModeHighlighted")
 		self:Show()
-		self.Label:Hide()
+		-- self.Label:Hide()
 	end
 
 	function EditModeSelectionMixin:ShowSelected()

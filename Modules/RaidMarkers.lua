@@ -37,7 +37,9 @@ local TargetToWorld = {
 	[8] = 8,
 }
 
-local RM = CreateFrame("Frame")
+-- local RM = CreateFrame("Frame", "amb_barAnchor", UIParent, "SecureHandlerStateTemplate")
+local RM = CreateFrame("Frame", "amb_bar", UIParent, "BackdropTemplate")
+-- RM:SetPoint("TOP", UIParent, "TOP", 0, -5)
 
 function RM:UpdateBar()
 	if not self.bar then
@@ -89,7 +91,7 @@ function RM:UpdateBar()
 
 	self.bar:Show()
 	self.bar:SetSize(width, height)
-	self.barAnchor:SetSize(width, height)
+	self:SetSize(width, height)
 
 	if self.db.backdrop then
 		self.bar.backdrop:Show()
@@ -154,7 +156,7 @@ function RM:LoadPosition(frame)
 			frame:SetPoint("TOP", UIParent, "BOTTOM", 0, self.db.PosY)
 		end
 	else
-		frame:SetPoint("CENTER", self.barAnchor, "CENTER", 0, DEFAULT_POSITION_Y)
+		frame:SetPoint("TOP", UIParent, "TOP", 0, DEFAULT_POSITION_Y)
 	end
 end
 
@@ -163,22 +165,23 @@ function RM:CreateBar()
 		return
 	end
 
-	local frame = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-	frame:SetPoint("TOP", UIParent, "TOP", 0, -5)
-	frame:SetFrameStrata("DIALOG")
-	self.barAnchor = frame
+	-- local frame = self
+	-- self:SetPoint("TOP", UIParent, "TOP", 0, -5)
+	-- self:SetFrameStrata("DIALOG")
+	-- self.barAnchor = frame
 
-	frame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-	frame:SetResizable(false)
-	frame:SetClampedToScreen(true)
-	frame:SetFrameStrata("LOW")
+	-- self = CreateFrame("Frame", "amb_bar", UIParent, "BackdropTemplate")
+	self:SetResizable(false)
+	self:SetClampedToScreen(true)
+	self:SetFrameStrata("LOW")
 	-- frame:CreateBackdrop("Transparent")
-	CreateBackdrop(frame, "Transparent")
+	CreateBackdrop(self, "Transparent")
 
-	RM:LoadPosition(frame)
+	RM:LoadPosition(self)
+	-- RM:LoadPosition(RM)
 
-	frame.buttons = {}
-	self.bar = frame
+	self.buttons = {}
+	self.bar = self
 
 	self:CreateButtons()
 	PrintDebug("Toggling settings after creating bar")
@@ -191,7 +194,7 @@ function RM:CreateButtons()
 	for i = 1, 11 do
 		local button = self.bar.buttons[i]
 		if not button then
-			button = CreateFrame("Button", nil, self.bar, "SecureActionButtonTemplate, BackdropTemplate")
+			button = CreateFrame("Button", "amb_button", self.bar, "SecureActionButtonTemplate, BackdropTemplate")
 			-- button:CreateBackdrop("Transparent")
 			CreateBackdrop(button, "Transparent")
 		end
@@ -356,8 +359,32 @@ local function Options_FontSizeSlider_FormatValue(value)
 	return format("%.0f%%", value)
 end
 
+function RM:SettingsDriversUpdate()
+	if RM.OptionFrame:IsShown() then
+		PrintDebug("Unregistering Driver Cause of Settings")
+		UnregisterStateDriver(self.bar, "visibility")
+		-- self.bar:Show()
+		self:Show()
+	elseif not RM.OptionFrame:IsShown() then
+		PrintDebug("Registering Driver Again")
+		if self.Selection then
+			self.Selection:Hide()
+		end
+		-- self:Hide()
+
+		RegisterStateDriver(
+			self,
+			"visibility",
+			self.db.visibility == "DEFAULT" and "[noexists, nogroup] hide; show"
+				or self.db.visibility == "ALWAYS" and "[petbattle] hide; show"
+				or "[group] show; [petbattle] hide; hide"
+		)
+	end
+end
+
 -- Edit Mode
 function RM:EnterEditMode()
+	RM:SettingsDriversUpdate()
 	if not self.enabled then
 		return
 	end
@@ -365,7 +392,7 @@ function RM:EnterEditMode()
 	if not self.Selection then
 		local uiName = "Raid Markers"
 		local hideLabel = false
-		self.Selection = Ambrosia.CreateEditModeSelection(self.bar, uiName, hideLabel)
+		self.Selection = Ambrosia.CreateEditModeSelection(self, uiName, hideLabel)
 	end
 
 	self.isEditing = true
@@ -377,12 +404,13 @@ function RM:EnterEditMode()
 end
 
 function RM:ExitEditMode()
+	RM:SettingsDriversUpdate()
 	if self.Selection then
 		self.Selection:Hide()
 	end
-	self.barAnchor:ShowOptions(false)
+	self:ShowOptions(false)
 	self.isEditing = false
-	self.bar:Hide()
+	-- self:Hide()
 end
 
 function RM:IsFocused()
@@ -391,7 +419,7 @@ function RM:IsFocused()
 end
 
 local function Options_ResetPosition_ShouldEnable(self)
-	if self.db.PosX and self.db.PosY then
+	if Ambrosia.db.RaidMarkerSettings.PosX and Ambrosia.db.RaidMarkerSettings.PosY then
 		return true
 	else
 		return false
@@ -400,11 +428,19 @@ end
 
 local function Options_ResetPosition_OnClick(self)
 	self:Disable()
-	self.db.PosX = nil
-	self.db.PosY = nil
+	RM.db.PosX = nil
+	RM.db.PosY = nil
 	Ambrosia.db.RaidMarkerSettings.PosX = nil
 	Ambrosia.db.RaidMarkerSettings.PosY = nil
-	RM:LoadPosition()
+	RM:LoadPosition(RM)
+end
+
+local function Options_InverseMode()
+	Ambrosia.db.RaidMarkerSettings.inverse = not Ambrosia.db.RaidMarkerSettings.inverse
+	RM.db.reverse = not RM.db.reverse
+	RM:UpdateButtons()
+	RM:UpdateBar()
+	PrintDebug("Inverse Mode: " .. tostring(Ambrosia.db.RaidMarkerSettings.inverse))
 end
 
 function RM:UpdateCountDownButton()
@@ -437,8 +473,8 @@ function RM:ToggleSettings()
 	end
 
 	if self.bar and not self.db.enable then
-		UnregisterStateDriver(self.bar, "visibility")
-		self.bar:Hide()
+		UnregisterStateDriver(self, "visibility")
+		self:Hide()
 		PrintDebug("UnregisterStateDriver")
 		return
 	end
@@ -449,7 +485,7 @@ function RM:ToggleSettings()
 	if self.bar and self.db and self.db.visibility then
 		PrintDebug("Registering State Driver")
 		RegisterStateDriver(
-			self.bar,
+			self,
 			"visibility",
 			self.db.visibility == "DEFAULT" and "[noexists, nogroup] hide; show"
 				or self.db.visibility == "ALWAYS" and "[petbattle] hide; show"
@@ -471,6 +507,52 @@ function RM:ToggleSettings()
 		self.bar:SetScript("OnEnter", nil)
 		self.bar:SetScript("OnLeave", nil)
 		self.bar:SetAlpha(1)
+	end
+end
+
+function RM:OnDragStart()
+	self:SetMovable(true)
+	self:SetDontSavePosition(true)
+	self:SetClampedToScreen(true)
+	self:StartMoving()
+end
+
+function RM:OnDragStop()
+	self:StopMovingOrSizing()
+
+	local centerX = self:GetCenter()
+	local uiCenter = UIParent:GetCenter()
+	local left = self:GetLeft()
+	local top = self:GetTop()
+
+	left = Round(left)
+	top = Round(top)
+
+	self:ClearAllPoints()
+
+	--Convert anchor and save position
+	if math.abs(uiCenter - centerX) <= 48 then
+		--Snap to centeral line
+		self:SetPoint("TOP", UIParent, "BOTTOM", 0, top)
+		Ambrosia.db.RaidMarkerSettings.PosX = -1
+		self.db.PosX = -1
+		PrintDebug("Centered")
+	else
+		self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+		Ambrosia.db.RaidMarkerSettings.PosX = left
+		self.db.PosX = left
+		PrintDebug("Not Centered")
+		PrintDebug("Left: " .. left)
+	end
+	Ambrosia.db.RaidMarkerSettings.PosY = top
+	self.db.PosY = top
+	PrintDebug("Top: " .. top)
+
+	if self.OptionFrame and self.OptionFrame:IsOwner(self) then
+		local button = self.OptionFrame:FindWidget("ResetButton")
+		if button then
+			button:Enable()
+		end
 	end
 end
 
@@ -508,7 +590,7 @@ local OPTIONS_SCHEMATIC = {
 		{
 			type = "Checkbox",
 			label = "Inverse",
-			onClickFunc = nil,
+			onClickFunc = Options_InverseMode,
 			dbKey = "RaidMarkerSettings.inverse",
 			tooltip = "Inverse Mode",
 		},
@@ -598,14 +680,14 @@ local OPTIONS_SCHEMATIC = {
 		-- 	tooltip2 = Tooltip_ManualLootInstruction,
 		-- },
 
-		-- { type = "Divider" },
-		-- {
-		-- 	type = "UIPanelButton",
-		-- 	label = L["Reset To Default Position"],
-		-- 	onClickFunc = Options_ResetPosition_OnClick,
-		-- 	stateCheckFunc = Options_ResetPosition_ShouldEnable,
-		-- 	widgetKey = "ResetButton",
-		-- },
+		{ type = "Divider" },
+		{
+			type = "UIPanelButton",
+			label = "Reset To Default Position",
+			onClickFunc = Options_ResetPosition_OnClick,
+			stateCheckFunc = Options_ResetPosition_ShouldEnable,
+			widgetKey = "ResetButton",
+		},
 	},
 }
 
@@ -619,7 +701,7 @@ function RM:ShowOptions(state)
 			self.OptionFrame:ClearAllPoints()
 			local top = 1 or self.bar:GetTop()
 			local left = 1 or self.bar:GetLeft()
-			self.OptionFrame:SetPoint("TOPLEFT", self.barAnchor, "TOPRIGHT", left, top + 64)
+			self.OptionFrame:SetPoint("TOPLEFT", self, "TOPRIGHT", left, top + 64)
 		end
 	else
 		if self.OptionFrame then
@@ -627,7 +709,9 @@ function RM:ShowOptions(state)
 		end
 
 		if not API.IsInEditMode() then
-			self:Hide()
+			RM:SettingsDriversUpdate()
+
+			-- self:Hide()
 		end
 	end
 end
@@ -645,7 +729,6 @@ do
 	end
 
 	local function OptionToggle_OnClick(self, button)
-		PrintDebug("Raid Markers Settings Pressed.")
 		if
 			RM.OptionFrame
 			and RM.OptionFrame:IsShown()
@@ -654,8 +737,8 @@ do
 			RM:ShowOptions(false)
 			RM:ExitEditMode()
 		else
-			RM:EnterEditMode()
 			RM:ShowOptions(true)
+			RM:EnterEditMode()
 		end
 	end
 

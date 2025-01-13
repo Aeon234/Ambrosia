@@ -1,0 +1,41 @@
+## Interface: 110007
+## Title:|cff18a8ffAmbrosia|r
+## Notes: Provides various in-game quality of life enhancements.
+## Author: Aeon
+## Version: 1.0.0
+## SavedVariables: Ambrosia_DB
+## IconTexture: Interface\Addons\AdvancedMythicTracker\Media\Icons\AMT_Icon
+## X-Curse-Project-ID: 
+## X-Wago-ID: 
+## OptionalDeps: ElvUI, ShadowedUnitFrames, Grid2
+
+#Core
+Core.lua
+
+#Util
+Util\Util.lua
+Util\API.lua
+Util\SharedWidgets.lua
+
+Settings.lua
+
+#Modules
+Modules\UIScale.lua
+Modules\RaidMarkers.lua
+
+#AMT_Frames.xml
+
+#Core
+#Core\Database.lua
+#Core\API.lua
+#Core\SharedWidgets.lua
+#Core\Util.lua
+
+#Config.lua
+#Main.lua
+#Display.lua
+
+#Modules
+#Modules\KeyEvents.lua
+#Modules\WorldMarkerCycler.lua
+#Modules\AutoResponse.lua

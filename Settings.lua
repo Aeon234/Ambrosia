@@ -268,7 +268,7 @@ local function CreateOptionToggle(checkbox, onClickFunc)
 		API.DisableSharpening(b.Texture)
 		b:SetScript("OnClick", onClickFunc)
 		b:SetScript("OnHide", OptionToggle_OnHide)
-		b.isAMTEditModeToggle = true
+		b.isAMBEditModeToggle = true
 		OptionToggle_SetFocused(b, false)
 		return b
 	end

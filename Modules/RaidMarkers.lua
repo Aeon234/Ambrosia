@@ -37,9 +37,7 @@ local TargetToWorld = {
 	[8] = 8,
 }
 
--- local RM = CreateFrame("Frame", "amb_barAnchor", UIParent, "SecureHandlerStateTemplate")
-local RM = CreateFrame("Frame", "amb_bar", UIParent, "BackdropTemplate")
--- RM:SetPoint("TOP", UIParent, "TOP", 0, -5)
+local RM = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
 
 function RM:UpdateBar()
 	if not self.bar then
@@ -64,17 +62,17 @@ function RM:UpdateBar()
 			button:Hide()
 		else
 			button:Show()
-			if self.db.orientation == "VERTICAL" then
+			if self.db.orientation == 2 then
 				if i == 1 then
 					button:SetPoint("TOP", 0, -self.db.backdropSpacing)
 				else
-					button:SetPoint("TOP", previousButton, "BOTTOM", 0, -self.db.spacing)
+					button:SetPoint("TOP", previousButton, "BOTTOM", 0, -self.db.buttonSpacing)
 				end
 			else
 				if i == 1 then
 					button:SetPoint("LEFT", self.db.backdropSpacing, 0)
 				else
-					button:SetPoint("LEFT", previousButton, "RIGHT", self.db.spacing, 0)
+					button:SetPoint("LEFT", previousButton, "RIGHT", self.db.buttonSpacing, 0)
 				end
 			end
 			previousButton = button
@@ -83,9 +81,11 @@ function RM:UpdateBar()
 	end
 
 	local height = self.db.buttonSize + self.db.backdropSpacing * 2
-	local width = self.db.backdropSpacing * 2 + self.db.buttonSize * numButtons + self.db.spacing * (numButtons - 1)
+	local width = self.db.backdropSpacing * 2
+		+ self.db.buttonSize * numButtons
+		+ self.db.buttonSpacing * (numButtons - 1)
 
-	if self.db.orientation == "VERTICAL" then
+	if self.db.orientation == 2 then
 		width, height = height, width
 	end
 
@@ -165,26 +165,17 @@ function RM:CreateBar()
 		return
 	end
 
-	-- local frame = self
-	-- self:SetPoint("TOP", UIParent, "TOP", 0, -5)
-	-- self:SetFrameStrata("DIALOG")
-	-- self.barAnchor = frame
-
-	-- self = CreateFrame("Frame", "amb_bar", UIParent, "BackdropTemplate")
 	self:SetResizable(false)
 	self:SetClampedToScreen(true)
 	self:SetFrameStrata("LOW")
-	-- frame:CreateBackdrop("Transparent")
 	CreateBackdrop(self, "Transparent")
 
 	RM:LoadPosition(self)
-	-- RM:LoadPosition(RM)
 
 	self.buttons = {}
 	self.bar = self
 
 	self:CreateButtons()
-	PrintDebug("Toggling settings after creating bar")
 	self:ToggleSettings()
 end
 
@@ -195,7 +186,6 @@ function RM:CreateButtons()
 		local button = self.bar.buttons[i]
 		if not button then
 			button = CreateFrame("Button", "amb_button", self.bar, "SecureActionButtonTemplate, BackdropTemplate")
-			-- button:CreateBackdrop("Transparent")
 			CreateBackdrop(button, "Transparent")
 		end
 		button:SetSize(self.db.buttonSize, self.db.buttonSize)
@@ -355,13 +345,9 @@ function RM:CreateButtons()
 	end
 end
 
-local function Options_FontSizeSlider_FormatValue(value)
-	return format("%.0f%%", value)
-end
-
 function RM:SettingsDriversUpdate()
 	if RM.OptionFrame:IsShown() then
-		PrintDebug("Unregistering Driver Cause of Settings")
+		PrintDebug("Unregistering Driver for Editing")
 		UnregisterStateDriver(self.bar, "visibility")
 		-- self.bar:Show()
 		self:Show()
@@ -398,9 +384,6 @@ function RM:EnterEditMode()
 	self.isEditing = true
 	self:SetScript("OnUpdate", nil)
 	self.Selection:ShowHighlighted()
-
-	-- self.bar:Show()
-	-- TargetUnit("player")
 end
 
 function RM:ExitEditMode()
@@ -408,9 +391,8 @@ function RM:ExitEditMode()
 	if self.Selection then
 		self.Selection:Hide()
 	end
-	self:ShowOptions(false)
 	self.isEditing = false
-	-- self:Hide()
+	self:Hide()
 end
 
 function RM:IsFocused()
@@ -435,12 +417,88 @@ local function Options_ResetPosition_OnClick(self)
 	RM:LoadPosition(RM)
 end
 
+local function Options_Slider_FormatWholeValue(value)
+	return format("%d", value)
+end
+
 local function Options_InverseMode()
 	Ambrosia.db.RaidMarkerSettings.inverse = not Ambrosia.db.RaidMarkerSettings.inverse
-	RM.db.reverse = not RM.db.reverse
+	RM.db.inverse = not RM.db.inverse
 	RM:UpdateButtons()
 	RM:UpdateBar()
-	PrintDebug("Inverse Mode: " .. tostring(Ambrosia.db.RaidMarkerSettings.inverse))
+end
+
+local function Options_Tooltip()
+	Ambrosia.db.RaidMarkerSettings.tooltip = not Ambrosia.db.RaidMarkerSettings.tooltip
+	RM.db.tooltip = not RM.db.tooltip
+end
+
+local function Options_Mouseover()
+	Ambrosia.db.RaidMarkerSettings.mouseOver = not Ambrosia.db.RaidMarkerSettings.mouseOver
+	RM.db.mouseOver = not RM.db.mouseOver
+	RM:ToggleSettings()
+end
+
+local function Options_BarOrientation(value)
+	Ambrosia.db.RaidMarkerSettings.orientation = value
+	RM.db.orientation = value
+	RM:UpdateBar()
+end
+
+local function Options_BarOrientation_FormatValue(value)
+	return value == 1 and "Horizontal" or "Vertical"
+end
+
+local function Options_BarBackdrop()
+	Ambrosia.db.RaidMarkerSettings.backdrop = not Ambrosia.db.RaidMarkerSettings.backdrop
+	RM.db.backdrop = not RM.db.backdrop
+	RM:UpdateBar()
+end
+
+local function Options_BarBackdropSpacing(value)
+	Ambrosia.db.RaidMarkerSettings.backdropSpacing = value
+	RM.db.backdropSpacing = value
+	RM:UpdateBar()
+end
+
+local function Options_ButtonBackdrop()
+	Ambrosia.db.RaidMarkerSettings.buttonBackdrop = not Ambrosia.db.RaidMarkerSettings.buttonBackdrop
+	RM.db.buttonBackdrop = not RM.db.buttonBackdrop
+	RM:UpdateButtons()
+end
+
+local function Options_ButtonSize(value)
+	Ambrosia.db.RaidMarkerSettings.buttonSize = value
+	RM.db.buttonSize = value
+	RM:UpdateButtons()
+	RM:UpdateBar()
+end
+
+local function Options_ButtonSpacing(value)
+	Ambrosia.db.RaidMarkerSettings.buttonSpacing = value
+	RM.db.buttonSpacing = value
+	RM:UpdateButtons()
+	RM:UpdateBar()
+end
+
+local function Options_ReadyCheck()
+	Ambrosia.db.RaidMarkerSettings.readyCheck = not Ambrosia.db.RaidMarkerSettings.readyCheck
+	RM.db.readyCheck = not RM.db.readyCheck
+	RM:UpdateButtons()
+	RM:UpdateBar()
+end
+
+local function Options_Countdown()
+	Ambrosia.db.RaidMarkerSettings.countDown = not Ambrosia.db.RaidMarkerSettings.countDown
+	RM.db.countDown = not RM.db.countDown
+	RM:UpdateButtons()
+	RM:UpdateBar()
+end
+
+local function Options_CountdownTime(value)
+	Ambrosia.db.RaidMarkerSettings.countDownTime = value
+	RM.db.countDownTime = value
+	RM:UpdateCountDownButton()
 end
 
 function RM:UpdateCountDownButton()
@@ -462,7 +520,6 @@ function RM:UpdateCountDownButton()
 end
 
 function RM:ToggleSettings()
-	PrintDebug("ToggleSettings")
 	if InCombatLockdown() then
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 		self:SetScript("OnEvent", RM:ToggleSettings())
@@ -536,17 +593,13 @@ function RM:OnDragStop()
 		self:SetPoint("TOP", UIParent, "BOTTOM", 0, top)
 		Ambrosia.db.RaidMarkerSettings.PosX = -1
 		self.db.PosX = -1
-		PrintDebug("Centered")
 	else
 		self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
 		Ambrosia.db.RaidMarkerSettings.PosX = left
 		self.db.PosX = left
-		PrintDebug("Not Centered")
-		PrintDebug("Left: " .. left)
 	end
 	Ambrosia.db.RaidMarkerSettings.PosY = top
 	self.db.PosY = top
-	PrintDebug("Top: " .. top)
 
 	if self.OptionFrame and self.OptionFrame:IsOwner(self) then
 		local button = self.OptionFrame:FindWidget("ResetButton")
@@ -559,11 +612,10 @@ end
 function RM:Enable()
 	self.db.enable = true
 	if self.enabled then
-		PrintDebug("self.enabled so returning")
 		return
 	end
 	if self.db.enable and not self.bar then
-		PrintDebug("Creating Bar")
+		PrintDebug("Creating RM Bar")
 		self:CreateBar()
 	elseif self.db.enable and self.bar then
 		self:ToggleSettings()
@@ -592,26 +644,109 @@ local OPTIONS_SCHEMATIC = {
 			label = "Inverse",
 			onClickFunc = Options_InverseMode,
 			dbKey = "RaidMarkerSettings.inverse",
-			tooltip = "Inverse Mode",
+			tooltip = "Swap the functionality of normal click and click with modifier keys.",
+		},
+		{
+			type = "Checkbox",
+			label = "Tooltip",
+			onClickFunc = Options_Tooltip,
+			dbKey = "RaidMarkerSettings.tooltip",
+			tooltip = "Show the tooltip when hovering over the buttons.",
+		},
+		{
+			type = "Checkbox",
+			label = "Mouseover",
+			onClickFunc = Options_Mouseover,
+			dbKey = "RaidMarkerSettings.mouseOver",
+			tooltip = "Show the bar only when hovering over it.",
+		},
+		{
+			type = "Slider",
+			label = "Bar Orientation",
+			minValue = 1,
+			maxValue = 2,
+			valueStep = 1,
+			onValueChangedFunc = Options_BarOrientation,
+			formatValueFunc = Options_BarOrientation_FormatValue,
+			dbKey = "RaidMarkerSettings.orientation",
 		},
 		{ type = "Divider" },
 		{ type = "Header", label = "Visibility" },
 		{
 			type = "Checkbox",
 			label = "Bar Backdrop",
-			onClickFunc = nil,
+			onClickFunc = Options_BarBackdrop,
 			dbKey = "RaidMarkerSettings.backdrop",
-			tooltip = "",
+			tooltip = "Show a backdrop for the bar",
 		},
 		{
 			type = "Slider",
 			label = "Backdrop Spacing",
+			tooltip = "Spacing between the backdrop and the buttons.",
 			minValue = 1,
 			maxValue = 30,
 			valueStep = 1,
-			onValueChangedFunc = nil,
-			formatValueFunc = Options_FontSizeSlider_FormatValue,
+			onValueChangedFunc = Options_BarBackdropSpacing,
+			formatValueFunc = Options_Slider_FormatWholeValue,
 			dbKey = "RaidMarkerSettings.backdropSpacing",
+		},
+		{ type = "Divider" },
+		{ type = "Header", label = "Buttons" },
+		{
+			type = "Checkbox",
+			label = "Button Backdrop",
+			onClickFunc = Options_ButtonBackdrop,
+			dbKey = "RaidMarkerSettings.buttonBackdrop",
+			tooltip = "Show a backdrop for each individual button.",
+		},
+		{
+			type = "Slider",
+			label = "Button Size",
+			tooltip = "Size of the buttons.",
+			minValue = 15,
+			maxValue = 60,
+			valueStep = 1,
+			onValueChangedFunc = Options_ButtonSize,
+			formatValueFunc = Options_Slider_FormatWholeValue,
+			dbKey = "RaidMarkerSettings.buttonSize",
+		},
+		{
+			type = "Slider",
+			label = "Button Spacing",
+			tooltip = "Spacing between the buttons.",
+			minValue = 1,
+			maxValue = 30,
+			valueStep = 1,
+			onValueChangedFunc = Options_ButtonSpacing,
+			formatValueFunc = Options_Slider_FormatWholeValue,
+			dbKey = "RaidMarkerSettings.buttonSpacing",
+		},
+		{ type = "Divider" },
+		{ type = "Header", label = "Ready Check / Countdown" },
+		{
+			type = "Checkbox",
+			label = "Ready Check / Advance Combat Logging",
+			onClickFunc = Options_ReadyCheck,
+			dbKey = "RaidMarkerSettings.readyCheck",
+			tooltip = "Left Click to ready check.\nRight click to toggle advanced combat logging.",
+		},
+		{
+			type = "Checkbox",
+			label = "Countdown",
+			onClickFunc = Options_Countdown,
+			dbKey = "RaidMarkerSettings.countDown",
+			tooltip = "Trigger a Countdown",
+		},
+		{
+			type = "Slider",
+			label = "Countdown Time",
+			tooltip = "Countdown time in seconds.",
+			minValue = 1,
+			maxValue = 30,
+			valueStep = 1,
+			onValueChangedFunc = Options_CountdownTime,
+			formatValueFunc = Options_Slider_FormatWholeValue,
+			dbKey = "RaidMarkerSettings.countDownTime",
 		},
 		-- {
 		-- 	type = "Checkbox",
@@ -701,18 +836,16 @@ function RM:ShowOptions(state)
 			self.OptionFrame:ClearAllPoints()
 			local top = 1 or self.bar:GetTop()
 			local left = 1 or self.bar:GetLeft()
-			self.OptionFrame:SetPoint("TOPLEFT", self, "TOPRIGHT", left, top + 64)
+			self.OptionFrame:SetPoint("CENTER", UIParent, "CENTER", 500, 100)
 		end
 	else
 		if self.OptionFrame then
 			self.OptionFrame:HideOption(self)
 		end
 
-		if not API.IsInEditMode() then
-			RM:SettingsDriversUpdate()
-
-			-- self:Hide()
-		end
+		-- if not API.IsInEditMode() then
+		-- 	RM:SettingsDriversUpdate()
+		-- end
 	end
 end
 
@@ -748,7 +881,7 @@ do
 		description = "Raid Markers Bar for ease of access.\nProvides all target and world markers in addition to Ready Check and Pull Timer.\n\nUse /amb rm for quick settings.",
 		toggleFunc = EnableModule,
 		categoryID = 1,
-		uiOrder = 2,
+		uiOrder = 4,
 		optionToggleFunc = OptionToggle_OnClick,
 	}
 

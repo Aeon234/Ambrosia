@@ -1,8 +1,8 @@
-local _, Ambrosia = ...
-local API = Ambrosia.API
+local _, addon = ...
+local API = addon.API
 
 local PrintDebug = function(...)
-	Ambrosia:PrintDebug(...)
+	addon:PrintDebug(...)
 end
 
 local BUTTON_MIN_SIZE = 27
@@ -67,17 +67,16 @@ do -- Checkbox
 		local newState
 
 		if self.dbKey and ElvUI and self.dbKey == "UIScale" then
-			newState = false
-			Ambrosia.SetDBValue(self.dbKey, newState)
-			self:SetChecked(newState)
+			-- newState = false
+			addon.SetDBValue(self.dbKey, false)
+			self:SetChecked(false)
 		elseif self.dbKey then
-			newState = not Ambrosia.GetDBValue(self.dbKey)
-			Ambrosia.SetDBValue(self.dbKey, newState)
+			newState = not addon.GetDBValue(self.dbKey)
+			addon.SetDBValue(self.dbKey, newState)
 			self:SetChecked(newState)
 		else
 			newState = not self:GetChecked()
 			self:SetChecked(newState)
-			PrintDebug("DB Key not assigned")
 		end
 
 		if self.onClickFunc then
@@ -231,14 +230,14 @@ do -- Checkbox
 		return b
 	end
 
-	Ambrosia.CreateCheckbox = CreateCheckbox
-	Ambrosia.CreateCustomCheckbox = CreateCustomCheckbox
+	addon.CreateCheckbox = CreateCheckbox
+	addon.CreateCustomCheckbox = CreateCustomCheckbox
 end
 
 do --Slider
 	local SliderFrameMixin = {}
 
-	local TEXTURE_FILE = "Interface/AddOns/Plumber/Art/Frame/Slider"
+	local TEXTURE_FILE = "Interface/AddOns/Ambrosia/Media/Button/Slider"
 	local TEX_COORDS = {
 		Thumb_Nomral = { 0, 0.5, 0, 0.25 },
 		Thumb_Disable = { 0.5, 1, 0, 0.25 },
@@ -495,7 +494,7 @@ do --Slider
 
 		return f
 	end
-	Ambrosia.CreateSlider = CreateSlider
+	addon.CreateSlider = CreateSlider
 end
 
 do -- Common Frame with Header (and close button)
@@ -576,7 +575,7 @@ do -- Common Frame with Header (and close button)
 		return fontString
 	end
 
-	Ambrosia.CreateCategoryDivider = CreateCategoryDivider
+	addon.CreateCategoryDivider = CreateCategoryDivider
 
 	local HeaderFrameMixin = {}
 
@@ -659,7 +658,7 @@ do -- Common Frame with Header (and close button)
 		return f
 	end
 
-	Ambrosia.CreateHeaderFrame = CreateHeaderFrame
+	addon.CreateHeaderFrame = CreateHeaderFrame
 end
 
 do --EditMode
@@ -682,7 +681,7 @@ do --EditMode
 		self.isSelected = false
 		self.Background:SetTexture("Interface/AddOns/Ambrosia/Media/Frame/EditModeHighlighted")
 		self:Show()
-		-- self.Label:Hide()
+		self.Label:Hide()
 	end
 
 	function EditModeSelectionMixin:ShowSelected()
@@ -712,7 +711,7 @@ do --EditMode
 
 	local function IsMouseOverOptionToggle()
 		local obj = GetMouseFocus()
-		if obj and obj.isAMTEditModeToggle then
+		if obj and obj.isAMBEditModeToggle then
 			return true
 		else
 			return false
@@ -724,6 +723,10 @@ do --EditMode
 			if self:IsShown() and not (self.parent:IsFocused() or IsMouseOverOptionToggle()) then
 				self:ShowHighlighted()
 				self.parent:ShowOptions(false)
+
+				if self.parent.ExitEditMode and not API.IsInEditMode() then
+					self.parent:ExitEditMode()
+				end
 			end
 		end
 	end
@@ -775,10 +778,10 @@ do --EditMode
 
 		return f
 	end
-	Ambrosia.CreateEditModeSelection = CreateEditModeSelection
+	addon.CreateEditModeSelection = CreateEditModeSelection
 
 	local EditModeSettingsDialog
-	local DIALOG_WIDTH = 382
+	local DIALOG_WIDTH = 460
 
 	local EditModeSettingsDialogMixin = {}
 
@@ -901,7 +904,7 @@ do --EditMode
 		checkbox.Label:SetTextColor(1, 1, 1)
 
 		checkbox:SetData(widgetData)
-		checkbox:SetChecked(Ambrosia.GetDBValue(checkbox.dbKey))
+		checkbox:SetChecked(addon.GetDBValue(checkbox.dbKey))
 
 		return checkbox
 	end
@@ -930,8 +933,8 @@ do --EditMode
 		slider:SetOnValueChangedFunc(widgetData.onValueChangedFunc)
 		slider.tooltip = widgetData.tooltip
 
-		if widgetData.dbKey and Ambrosia.GetDBValue(widgetData.dbKey) then
-			slider:SetValue(Ambrosia.GetDBValue(widgetData.dbKey))
+		if widgetData.dbKey and addon.GetDBValue(widgetData.dbKey) then
+			slider:SetValue(addon.GetDBValue(widgetData.dbKey))
 		end
 
 		return slider
@@ -952,7 +955,7 @@ do --EditMode
 
 	function EditModeSettingsDialogMixin:CreateDivider(widgetData)
 		local texture = self:AcquireWidgetByType("Texture")
-		texture:SetTexture("Interface/AddOns/Plumber/Art/Frame/Divider_NineSlice")
+		texture:SetTexture("Interface/AddOns/Ambrosia/Media/Frame/Divider_NineSlice")
 		texture:SetTextureSliceMargins(48, 4, 48, 4)
 		texture:SetTextureSliceMode(0)
 		texture:SetHeight(4)
@@ -975,7 +978,7 @@ do --EditMode
 		local button = self:AcquireWidgetByType("Keybind")
 		button.dbKey = widgetData.dbKey
 		button.tooltip = widgetData.tooltip
-		button:SetKeyText(Ambrosia.GetDBValue(widgetData.dbKey))
+		button:SetKeyText(addon.GetDBValue(widgetData.dbKey))
 		button:SetLabel(widgetData.label)
 		return button
 	end
@@ -1103,17 +1106,17 @@ do --EditMode
 			f:SetScript("OnDragStop", f.OnDragStop)
 
 			local function CreateCheckbox()
-				return Ambrosia.CreateCheckbox(f)
+				return addon.CreateCheckbox(f)
 			end
 			f.checkboxPool = API.CreateObjectPool(CreateCheckbox)
 
 			local function CreateSlider()
-				return Ambrosia.CreateSlider(f)
+				return addon.CreateSlider(f)
 			end
 			f.sliderPool = API.CreateObjectPool(CreateSlider)
 
 			local function CreateUIPanelButton()
-				return Ambrosia.CreateUIPanelButton(f)
+				return addon.CreateUIPanelButton(f)
 			end
 			f.uiPanelButtonPool = API.CreateObjectPool(CreateUIPanelButton)
 
@@ -1128,7 +1131,7 @@ do --EditMode
 			f.fontStringPool = API.CreateObjectPool(CreateFontString)
 
 			local function CreateKeybindButton()
-				return Ambrosia.CreateKeybindButton(f)
+				return addon.CreateKeybindButton(f)
 			end
 			f.keybindButtonPool = API.CreateObjectPool(CreateKeybindButton)
 		end
@@ -1151,7 +1154,7 @@ do --EditMode
 
 		return EditModeSettingsDialog
 	end
-	Ambrosia.SetupSettingsDialog = SetupSettingsDialog
+	addon.SetupSettingsDialog = SetupSettingsDialog
 
 	local function ToggleSettingsDialog(parent, schematic, forceUpdate)
 		if EditModeSettingsDialog and EditModeSettingsDialog:IsShown() and EditModeSettingsDialog:IsOwner(parent) then
@@ -1166,7 +1169,7 @@ do --EditMode
 			end
 		end
 	end
-	Ambrosia.ToggleSettingsDialog = ToggleSettingsDialog
+	addon.ToggleSettingsDialog = ToggleSettingsDialog
 end
 
 do --UIPanelButton
@@ -1236,5 +1239,5 @@ do --UIPanelButton
 
 		return f
 	end
-	Ambrosia.CreateUIPanelButton = CreateUIPanelButton
+	addon.CreateUIPanelButton = CreateUIPanelButton
 end

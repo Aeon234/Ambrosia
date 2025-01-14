@@ -21,7 +21,9 @@ Settings.lua
 
 #Modules
 Modules\UIScale.lua
-Modules\RaidMarkers.lua
+# Modules\MinimapButtons.lua
+Modules\InstanceDifficulty.lua
+# Modules\RaidMarkers.lua
 
 #AMT_Frames.xml
 

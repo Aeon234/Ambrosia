@@ -66,6 +66,33 @@ do
 	end
 end
 
+function Ambrosia.DelvesEventFix(original, func)
+	local isWaiting = false
+
+	return function(...)
+		local difficulty = select(3, GetInstanceInfo())
+		if not difficulty or difficulty ~= 208 then
+			return original(...)
+		end
+
+		if isWaiting then
+			return
+		end
+
+		local f = GenerateFlatClosure(original, ...)
+
+		RunNextFrame(function()
+			if not isWaiting then
+				isWaiting = true
+				E:Delay(3, function()
+					f()
+					isWaiting = false
+				end)
+			end
+		end)
+	end
+end
+
 -- ElvUI CreateBackdrop() Adaptation
 
 -- Define some constants for colors and textures

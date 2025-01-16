@@ -347,12 +347,12 @@ end
 
 function RM:SettingsDriversUpdate()
 	if RM.OptionFrame:IsShown() then
-		PrintDebug("Unregistering Driver for Editing")
+		--PrintDebug("Unregistering Driver for Editing")
 		UnregisterStateDriver(self.bar, "visibility")
 		-- self.bar:Show()
 		self:Show()
 	elseif not RM.OptionFrame:IsShown() then
-		PrintDebug("Registering Driver Again")
+		--PrintDebug("Registering Driver Again")
 		if self.Selection then
 			self.Selection:Hide()
 		end
@@ -532,7 +532,7 @@ function RM:ToggleSettings()
 	if self.bar and not self.db.enable then
 		UnregisterStateDriver(self, "visibility")
 		self:Hide()
-		PrintDebug("UnregisterStateDriver")
+		--PrintDebug("UnregisterStateDriver")
 		return
 	end
 
@@ -540,7 +540,7 @@ function RM:ToggleSettings()
 	self:UpdateBar()
 
 	if self.bar and self.db and self.db.visibility then
-		PrintDebug("Registering State Driver")
+		--PrintDebug("Registering State Driver")
 		RegisterStateDriver(
 			self,
 			"visibility",
@@ -615,7 +615,7 @@ function RM:Enable()
 		return
 	end
 	if self.db.enable and not self.bar then
-		PrintDebug("Creating RM Bar")
+		--PrintDebug("Creating RM Bar")
 		self:CreateBar()
 	elseif self.db.enable and self.bar then
 		self:ToggleSettings()
@@ -624,7 +624,7 @@ function RM:Enable()
 	self.modifierString = self.db.modifier:gsub("^%l", strupper)
 
 	self.enabled = true
-	PrintDebug("Raid Markers Enabled")
+	--PrintDebug("Raid Markers Enabled")
 end
 
 function RM:Disable()
@@ -633,7 +633,7 @@ function RM:Disable()
 		self:ToggleSettings()
 	end
 	self.enabled = false
-	PrintDebug("Raid Markers Disabled")
+	--PrintDebug("Raid Markers Disabled")
 end
 
 local OPTIONS_SCHEMATIC = {
@@ -880,8 +880,8 @@ do
 		dbKey = "RaidMarkers",
 		description = "Raid Markers Bar for ease of access.\nProvides all target and world markers in addition to Ready Check and Pull Timer.\n\nUse /amb rm for quick settings.",
 		toggleFunc = EnableModule,
-		categoryID = 1,
-		uiOrder = 4,
+		categoryID = 2,
+		uiOrder = 1,
 		optionToggleFunc = OptionToggle_OnClick,
 	}
 

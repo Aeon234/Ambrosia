@@ -16,8 +16,8 @@ local DIFFERENT_CATEGORY_OFFSET = 8
 local LEFT_SECTOR_WIDTH = math.floor(0.618 * FRAME_WIDTH + 0.5)
 
 local CATEGORY_ORDER = {
-	[1] = "General",
-	[2] = "Mythic+",
+	[1] = "General UI Enhancements",
+	[2] = "Mythic+ & Raid",
 }
 local DEFAULT_COLLAPSED_CATEGORY = {}
 -- DEFAULT_COLLAPSED_CATEGORY[10020000] = true -- If we want want to start a category collapsed, change 10020000 to the category #

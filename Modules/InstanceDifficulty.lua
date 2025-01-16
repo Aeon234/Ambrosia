@@ -17,19 +17,24 @@ local IsInInstance = IsInInstance
 local C_AddOns_IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local C_ChallengeMode_GetActiveKeystoneInfo = C_ChallengeMode.GetActiveKeystoneInfo
 
+local ExampleTextTimer
+
 local ID = CreateFrame("Frame", "InstanceDifficultyFrame", _G.Minimap)
 ID:SetScript("OnEvent", function(self, event, ...)
+	PrintDebug(tostring(event) .. " event triggered")
 	self:UpdateFrame()
 end)
 
 function ID:UpdateFrame()
+	--PrintDebug("Frame Updater ran")
+
 	local inInstance, instanceType = IsInInstance()
 	local difficulty = select(3, GetInstanceInfo())
 	local numplayers = select(9, GetInstanceInfo())
 	local mplusdiff = select(1, C_ChallengeMode_GetActiveKeystoneInfo()) or ""
 
 	if difficulty == 0 then
-		self.frame.text:SetText("test")
+		self.frame.text:SetText("")
 	elseif instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
 		local text = ID:GetTextForDifficulty(difficulty, false)
 
@@ -48,6 +53,26 @@ function ID:UpdateFrame()
 	end
 
 	self.frame:SetShown(inInstance)
+end
+
+function ID:SettingsExampleTest()
+	local inInstance, instanceType = IsInInstance()
+
+	if self.frame:IsShown() and inInstance then
+		return
+	elseif self.frame:IsShown() and not self.OptionFrame:IsShown() then
+		self.frame:Hide()
+	else
+		self.frame.text:SetText("|cffff3860M+|r21")
+		self.frame:Show()
+		if ExampleTextTimer then
+			ExampleTextTimer:Cancel()
+		end
+		ExampleTextTimer = C_Timer.NewTimer(2, function()
+			self.frame:Hide()
+			ExampleTextTimer = nil
+		end)
+	end
 end
 
 function ID:GetTextForDifficulty(difficulty, useDefault)
@@ -107,6 +132,8 @@ function ID:GetTextForDifficulty(difficulty, useDefault)
 end
 
 function ID:ConstructFrame()
+	--PrintDebug("Frame Constructor ran")
+
 	if not self.db then
 		return
 	end
@@ -118,18 +145,29 @@ function ID:ConstructFrame()
 
 	local text = self:CreateFontString(nil, "OVERLAY")
 	text:SetFont(Ambrosia.DefaultFont, self.db.fontSize, self.db.fontOutline)
-	text:SetPoint(self.db.align or "LEFT")
+	-- text:SetPoint(self.db.align or "LEFT")
+	text:SetPoint("LEFT")
 	self.text = text
 
 	self.frame = self
 end
 
-function ID:HideBlizzardDifficulty(difficultyFrame, isShown)
-	if not self.db or not self.db.hideBlizzard or not isShown then
+function ID:LoadPosition()
+	--PrintDebug("Position Loader ran")
+	if not self.db then
 		return
 	end
 
-	difficultyFrame:Hide()
+	local difficulty = _G.MinimapCluster.InstanceDifficulty
+	local anchor = _G.MinimapCluster.BorderTop
+	difficulty:ClearAllPoints()
+	if self.db.align == 1 then
+		-- difficulty:SetPoint("TOPLEFT", _G.MinimapCluster, "TOPLEFT", 40, -20)
+		difficulty:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, -15)
+	elseif self.db.align == 2 then
+		difficulty:ClearAllPoints()
+		difficulty:SetPoint("TOPRIGHT", anchor, "TOPRIGHT", 0, -15)
+	end
 end
 
 function ID:ADDON_LOADED(_, addon)
@@ -137,9 +175,7 @@ function ID:ADDON_LOADED(_, addon)
 		self:UnregisterEvent("ADDON_LOADED")
 
 		local difficulty = _G.MinimapCluster.InstanceDifficulty
-		AMBTest = _G.MinimapCluster
-		difficulty:ClearAllPoints()
-		difficulty:SetPoint("TOPLEFT", _G.MinimapCluster, "TOPLEFT", 40, -20)
+		self:LoadPosition()
 		for _, frame in pairs({ difficulty.Default, difficulty.Guild, difficulty.ChallengeMode }) do
 			frame:SetAlpha(0)
 		end
@@ -148,7 +184,83 @@ end
 
 ID.GROUP_ROSTER_UPDATE = Ambrosia.DelvesEventFix(ID.UpdateFrame)
 
-function ID:Initialize() end
+function ID:SettingsUpdate()
+	--PrintDebug("Settings Updated")
+	if not self.db then
+		return
+	end
+	ID:SettingsExampleTest()
+
+	self:LoadPosition()
+	self.text:SetFont(Ambrosia.DefaultFont, self.db.fontSize, self.db.fontOutline)
+end
+
+local function Options_IDAlign(value)
+	Ambrosia.db.InstanceDifficultySettings.align = value
+	ID.db.align = value
+	ID:SettingsUpdate()
+end
+
+local function Options_Options_IDAlign_FormatValue(value)
+	return value == 1 and "LEFT" or "RIGHT"
+end
+
+local function Options_IDTextSize(value)
+	Ambrosia.db.InstanceDifficultySettings.fontSize = value
+	ID.db.fontSize = value
+	ID:SettingsUpdate()
+end
+
+local function Options_Slider_FormatWholeValue(value)
+	return format("%d", value)
+end
+
+local OPTIONS_SCHEMATIC = {
+	title = "Instance Difficulty Options",
+	widgets = {
+		{
+			type = "Slider",
+			label = "Align",
+			tootlip = "Align the text to the top left or top right of the frame.",
+			minValue = 1,
+			maxValue = 2,
+			valueStep = 1,
+			onValueChangedFunc = Options_IDAlign,
+			formatValueFunc = Options_Options_IDAlign_FormatValue,
+			dbKey = "InstanceDifficultySettings.align",
+		},
+		{
+			type = "Slider",
+			label = "Font Size",
+			tootlip = "Align the text to the top left or top right of the frame.",
+			minValue = 5,
+			maxValue = 60,
+			valueStep = 1,
+			onValueChangedFunc = Options_IDTextSize,
+			formatValueFunc = Options_Slider_FormatWholeValue,
+			dbKey = "InstanceDifficultySettings.fontSize",
+		},
+	},
+}
+
+function ID:ShowOptions(state)
+	if state then
+		local forceUpdate = true
+		self.OptionFrame = Ambrosia.SetupSettingsDialog(self, OPTIONS_SCHEMATIC, forceUpdate)
+		self.OptionFrame:Show()
+		if self.OptionFrame.requireResetPosition then
+			self.OptionFrame.requireResetPosition = false
+			self.OptionFrame:ClearAllPoints()
+			local top = 1 or self.bar:GetTop()
+			local left = 1 or self.bar:GetLeft()
+			self.OptionFrame:SetPoint("CENTER", UIParent, "CENTER", 500, 100)
+		end
+	else
+		if self.OptionFrame then
+			self.OptionFrame:HideOption(self)
+		end
+	end
+end
 
 function ID:Enable()
 	self.db.enable = true
@@ -176,24 +288,18 @@ function ID:Enable()
 
 	self:UpdateFrame()
 
-	-- if self.db.enable and not self.bar then
-	-- 	PrintDebug("Creating RM Bar")
-	-- 	self:CreateBar()
-	-- elseif self.db.enable and self.bar then
-	-- 	self:ToggleSettings()
-	-- end
-
 	self.enabled = true
-	PrintDebug("Minimap Button Container Enabled")
+	--PrintDebug("Instance Difficulty Enabled")
 end
 
 function ID:Disable()
 	if self.enabled then
+		Ambrosia:ReloadPopUp()
 		self.db.enable = false
 		-- self:ToggleSettings()
 	end
 	self.enabled = false
-	PrintDebug("Minimap Button Container Disabled")
+	--PrintDebug("Instance Difficulty Disabled")
 end
 
 do
@@ -216,10 +322,8 @@ do
 			and (ID.OptionFrame:IsOwner(self) or ID.OptionFrame:IsOwner(ID))
 		then
 			ID:ShowOptions(false)
-			ID:ExitEditMode()
 		else
 			ID:ShowOptions(true)
-			ID:EnterEditMode()
 		end
 	end
 

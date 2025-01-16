@@ -13,9 +13,9 @@ local function UI_Rescaler(self, event, isLogin, isReload)
 	end
 	if InCombatLockdown() then
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
-		PrintDebug("Currently in combat. Waiting until Health Regen is enabled.")
+		--PrintDebug("Currently in combat. Waiting until Health Regen is enabled.")
 	elseif isLogin or isReload or event == "PLAYER_REGEN_ENABLED" or event == "MANUAL_TOGGLE" then
-		PrintDebug("Updating UI Scale")
+		--PrintDebug("Updating UI Scale")
 		local width, height = GetPhysicalScreenSize()
 		local ResScale = 0
 		if height > 0 then
@@ -25,23 +25,26 @@ local function UI_Rescaler(self, event, isLogin, isReload)
 			UIParent:SetScale(ResScale)
 		end
 		if ShadowUF then
-			PrintDebug("Reloading ShadowedUnitFrame Layout")
+			--PrintDebug("Reloading ShadowedUnitFrame Layout")
 			ShadowUF.Layout:Reload()
 			if Grid2 then
-				PrintDebug("Reloading Grid2 Layout")
+				--PrintDebug("Reloading Grid2 Layout")
 				Grid2Layout:RestorePositions()
 			end
 		end
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		PrintDebug("Unregistering UI Scale Events")
+		--PrintDebug("Unregistering UI Scale Events")
 	else
 		return
 	end
 end
 
 function UI_RescalerEvent:Enable()
-	if self.enabled then
+	if self.enabled and ElvUI then
+		self.enabled = false
+		return
+	elseif self.enabled then
 		return
 	end
 	UI_RescalerEvent:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -49,7 +52,7 @@ function UI_RescalerEvent:Enable()
 	UI_Rescaler(UI_RescalerEvent, "MANUAL_TOGGLE", _, _)
 
 	self.enabled = true
-	PrintDebug("Enabled Rescaler")
+	--PrintDebug("Enabled Rescaler")
 end
 
 function UI_RescalerEvent:Disable()
@@ -57,31 +60,14 @@ function UI_RescalerEvent:Disable()
 		UI_RescalerEvent:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end
 	self.enabled = false
-	PrintDebug("Disabled Rescaler")
-end
-
-function UI_RescalerEvent:ReloadPopUp()
-	if not StaticPopupDialogs["AMBROSIA_RELOAD"] then
-		StaticPopupDialogs["AMBROSIA_RELOAD"] = {
-			text = "To finalize changes it's recommended that you reload the UI.\n\nWould you like to reload the UI right now?",
-			button1 = "Yes",
-			button2 = "No",
-			OnAccept = function()
-				C_UI.Reload()
-			end,
-			timeout = 0,
-			whileDead = true,
-			hideOnEscape = true,
-		}
-	end
-	StaticPopup_Show("AMBROSIA_RELOAD")
+	--PrintDebug("Disabled Rescaler")
 end
 
 do
 	local function EnableModule(state)
 		if ElvUI then
 			UI_RescalerEvent.enabled = false
-			PrintDebug("Detected ElvUI, Disabling Rescaler")
+			--PrintDebug("Detected ElvUI, Disabling Rescaler")
 			return
 		end
 		if state then
@@ -90,7 +76,7 @@ do
 			UI_RescalerEvent:Disable()
 		end
 		if SettingsPanel and SettingsPanel:IsShown() then
-			UI_RescalerEvent:ReloadPopUp()
+			Ambrosia:ReloadPopUp()
 		end
 	end
 

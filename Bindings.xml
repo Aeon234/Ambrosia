@@ -1,0 +1,6 @@
+<Bindings>
+  <Binding name="CLICK WorldMarker_Placer:LeftButton" category="|cff18a8ffAmbrosia|r">
+  </Binding>
+  <Binding name="CLICK WorldMarker_Remover:LeftButton" category="|cff18a8ffAmbrosia|r">
+  </Binding>
+</Bindings>

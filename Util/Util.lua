@@ -1,6 +1,7 @@
 local addonName, Ambrosia = ...
 
 local _G = _G
+local C_Timer_After = C_Timer.After
 local ceil = ceil
 local format = format
 local strlower = strlower
@@ -29,6 +30,25 @@ function Ambrosia:ReloadPopUp()
 		}
 	end
 	StaticPopup_Show("AMBROSIA_RELOAD")
+end
+
+do
+	local function CreateClosure(func, data)
+		return function()
+			func(unpack(data))
+		end
+	end
+
+	function Ambrosia:Delay(delay, func, ...)
+		if type(delay) ~= "number" or type(func) ~= "function" then
+			return false
+		end
+
+		local args = { ... } -- delay: Restrict to the lowest time that the API allows us
+		C_Timer_After(delay < 0.01 and 0.01 or delay, (#args <= 0 and func) or CreateClosure(func, args))
+
+		return true
+	end
 end
 
 do
@@ -101,7 +121,7 @@ function Ambrosia.DelvesEventFix(original, func)
 		RunNextFrame(function()
 			if not isWaiting then
 				isWaiting = true
-				E:Delay(3, function()
+				Ambrosia:Delay(3, function()
 					f()
 					isWaiting = false
 				end)
@@ -155,4 +175,75 @@ function CreateBackdrop(frame, template)
 	end
 
 	SetOutside(backdrop, frame, 1, 1)
+end
+
+function Ambrosia:CreateOptionsPane(name)
+	local f = CreateFrame("Frame", name, UIParent)
+	f:Hide()
+	f:SetSize(440, 150)
+	f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+	f:SetMovable(true)
+	f:SetClampedToScreen(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetDontSavePosition(true)
+	f:SetFrameStrata("DIALOG")
+	f:SetFrameLevel(200)
+	f:EnableMouse(true)
+	f:SetScript("OnDragStart", function(self, button)
+		self:StartMoving()
+	end)
+	f:SetScript("OnDragStop", function(self, button)
+		self:StopMovingOrSizing()
+	end)
+
+	f.Border = CreateFrame("Frame", nil, f, "DialogBorderTranslucentTemplate")
+	f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButtonNoScripts")
+	f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
+	f.CloseButton:SetScript("OnClick", function()
+		f:Hide()
+		f:ClearAllPoints()
+		f.requireResetPosition = true
+		if f.parent then
+			if f.parent.Selection then
+				f.parent.Selection:ShowHighlighted()
+			end
+			if f.parent.ExitEditMode and not API.IsInEditMode() then
+				f.parent:ExitEditMode()
+			end
+			f.parent = nil
+		end
+	end)
+	f.Title = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
+	f.Title:SetPoint("TOP", f, "TOP", 0, -16)
+
+	f.Divider = f:CreateTexture(nil, "OVERLAY")
+	f.Divider:SetTexture("Interface/AddOns/AdvancedMythicTracker/Media/Frame/Divider_NineSlice")
+	f.Divider:SetTextureSliceMargins(48, 4, 48, 4)
+	f.Divider:SetTextureSliceMode(0)
+	f.Divider:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -34)
+	f.Divider:SetHeight(8)
+	f.Divider:SetWidth(f:GetWidth() - (20 * 2))
+	tinsert(UISpecialFrames, f:GetName())
+	return f
+end
+
+-- Convert RGB to Hex
+function AMB_RGBtoHexConversion(r, g, b, header, ending)
+	r = r <= 1 and r >= 0 and r or 1
+	g = g <= 1 and g >= 0 and g or 1
+	b = b <= 1 and b >= 0 and b or 1
+	return format("%s%02x%02x%02x%s", header or "|cff", r * 255, g * 255, b * 255, ending or "")
+end
+
+-- Color Text to appropriate Color Name
+function AMB_ClassColorString(text, ClassName)
+	local r, g, b = GetClassColor(ClassName)
+	local hexcolor = r and g and b and AMB_RGBtoHexConversion(r, g, b) or "|cffffffff"
+	return hexcolor .. text .. "|r"
+end
+
+--Strip a string of it's color wrapping
+function AMB_StripColorText(coloredString)
+	local color, text = coloredString:match("|c(%x%x%x%x%x%x%x%x)(.-)|r")
+	return text
 end

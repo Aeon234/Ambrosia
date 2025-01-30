@@ -26,7 +26,7 @@ Ambrosia.DefaultValues = {
 	InstanceDifficultySettings = {
 		enable = false,
 		-- hideBlizzard = true,
-		align = 1,
+		align = "LEFT",
 		fontSize = 12,
 		fontOutline = "OUTLINE",
 		difficulty = {
@@ -86,8 +86,8 @@ Ambrosia.DefaultValues = {
 		buttonSize = 32,
 		buttonBackdrop = true,
 		buttonSpacing = 3,
-		orientation = 1, --HORIZONTAL/VERTICAL couldn't be supported. reworked to 1-2
-		modifier = "shift", --"Alt Key", "Ctrl Key", "Shift Key"
+		orientation = 1,
+		modifier = "shift",
 		readyCheck = true,
 		countDown = true,
 		countDownTime = 12,
@@ -95,9 +95,43 @@ Ambrosia.DefaultValues = {
 		PosX = nil,
 		PosY = nil,
 	},
+	WorldMarkerCycler = true,
+	WorldMarkerCyclerSettings = {
+		WorldMarkerCycler_Order = { 5, 6, 3, 2, 7, 1, 4, 8 },
+		Cycler_Star = true,
+		Cycler_Circle = true,
+		Cycler_Diamond = true,
+		Cycler_Triangle = true,
+		Cycler_Moon = true,
+		Cycler_Square = true,
+		Cycler_X = true,
+		Cycler_Skull = true,
+	},
+	WhoseKey = true,
+	WhoseKeySettings = {
+		PosX = nil,
+		PosY = nil,
+	},
 }
 Ambrosia.API = {} --Custom APIs used by this addon
 Ambrosia.DefaultFont = "Interface/AddOns/Ambrosia/Media/Expressway.TTF"
+
+Ambrosia.WorldMarkers = {
+	{ id = 1, icon = "Star", textAtlas = 8, wmID = 5 },
+	{ id = 2, icon = "Circle", textAtlas = 7, wmID = 6 },
+	{ id = 3, icon = "Diamond", textAtlas = 6, wmID = 3 },
+	{ id = 4, icon = "Triangle", textAtlas = 5, wmID = 2 },
+	{ id = 5, icon = "Moon", textAtlas = 4, wmID = 7 },
+	{ id = 6, icon = "Square", textAtlas = 3, wmID = 1 },
+	{ id = 7, icon = "X", textAtlas = 2, wmID = 4 },
+	{ id = 8, icon = "Skull", textAtlas = 1, wmID = 8 },
+}
+
+-- ==============================
+-- === Shortcuts and Keybinds ===
+-- ==============================
+_G["BINDING_NAME_CLICK WorldMarker_Placer:LeftButton"] = "World Marker Cycler"
+_G["BINDING_NAME_CLICK WorldMarker_Remover:LeftButton"] = "World Marker Erase"
 
 do
 	local tocVersion = select(4, GetBuildInfo())
@@ -153,6 +187,9 @@ function Ambrosia:LoadDatabase()
 	self.SetDBValue = SetDBValue
 
 	self.DefaultValues = nil
+
+	local width, height = GetPhysicalScreenSize()
+	self.uiScaleCurrent = 768 / height
 end
 
 local ADDON_LOADED = CreateFrame("Frame")

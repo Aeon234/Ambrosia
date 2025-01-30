@@ -623,6 +623,8 @@ function AMB_DebugCommands(msg)
 		else
 			print("|cffffd200Ambrosia|r Debug: |c3fff2114Disabled|r")
 		end
+	elseif msg == "wm" and not InCombatLockdown() then
+		Ambrosia:WorldMarkerCycler_ToggleConfig()
 	else
 		Settings.OpenToCategory(Ambrosia_SettingsID)
 	end

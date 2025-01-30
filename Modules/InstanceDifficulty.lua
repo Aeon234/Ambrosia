@@ -21,7 +21,7 @@ local ExampleTextTimer
 
 local ID = CreateFrame("Frame", "InstanceDifficultyFrame", _G.Minimap)
 ID:SetScript("OnEvent", function(self, event, ...)
-	PrintDebug(tostring(event) .. " event triggered")
+	-- PrintDebug(tostring(event) .. " event triggered")
 	self:UpdateFrame()
 end)
 
@@ -161,10 +161,10 @@ function ID:LoadPosition()
 	local difficulty = _G.MinimapCluster.InstanceDifficulty
 	local anchor = _G.MinimapCluster.BorderTop
 	difficulty:ClearAllPoints()
-	if self.db.align == 1 then
+	if self.db.align == "LEFT" then
 		-- difficulty:SetPoint("TOPLEFT", _G.MinimapCluster, "TOPLEFT", 40, -20)
 		difficulty:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, -15)
-	elseif self.db.align == 2 then
+	elseif self.db.align == "RIGHT" then
 		difficulty:ClearAllPoints()
 		difficulty:SetPoint("TOPRIGHT", anchor, "TOPRIGHT", 0, -15)
 	end
@@ -219,20 +219,20 @@ local OPTIONS_SCHEMATIC = {
 	title = "Instance Difficulty Options",
 	widgets = {
 		{
-			type = "Slider",
+			type = "Dropdown",
 			label = "Align",
-			tootlip = "Align the text to the top left or top right of the frame.",
-			minValue = 1,
-			maxValue = 2,
-			valueStep = 1,
+			tooltip = "Align the text to the top left or top right of the frame.",
+			options = { -- Dropdown options
+				{ text = "Left", value = "LEFT" },
+				{ text = "Right", value = "RIGHT" },
+			},
 			onValueChangedFunc = Options_IDAlign,
-			formatValueFunc = Options_Options_IDAlign_FormatValue,
 			dbKey = "InstanceDifficultySettings.align",
 		},
 		{
 			type = "Slider",
 			label = "Font Size",
-			tootlip = "Align the text to the top left or top right of the frame.",
+			tooltip = "Align the text to the top left or top right of the frame.",
 			minValue = 5,
 			maxValue = 60,
 			valueStep = 1,

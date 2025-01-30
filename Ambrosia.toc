@@ -4,10 +4,10 @@
 ## Author: Aeon
 ## Version: 1.0.0
 ## SavedVariables: Ambrosia_DB
-## IconTexture: Interface\Addons\AdvancedMythicTracker\Media\Icons\AMT_Icon
+## IconTexture: Interface\Addons\Ambrosia\Media\Art\Ambrosia
 ## X-Curse-Project-ID: 
 ## X-Wago-ID: 
-## OptionalDeps: ElvUI, ShadowedUnitFrames, Grid2
+## OptionalDeps: ElvUI, ShadowedUnitFrames, Grid2, Details
 
 #Core
 Core.lua
@@ -21,9 +21,12 @@ Settings.lua
 
 #Modules
 Modules\UIScale.lua
-# Modules\MinimapButtons.lua
+Modules\MinimapButtons.lua
 Modules\InstanceDifficulty.lua
 Modules\RaidMarkers.lua
+Modules\WorldMarkerCycler.lua
+Modules\WhoseKey.lua
+# Modules\test.lua
 
 #AMT_Frames.xml
 

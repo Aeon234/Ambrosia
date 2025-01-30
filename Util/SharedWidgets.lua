@@ -446,7 +446,7 @@ do --Slider
 
 	function SliderFrameMixin:SetLabelWidth(width)
 		self.Label:SetWidth(width)
-		self:SetWidth(242 + width)
+		self:SetWidth(242 + width) --386
 		self.Slider:SetPoint("LEFT", self, "LEFT", 28 + width, 0)
 	end
 
@@ -495,6 +495,102 @@ do --Slider
 		return f
 	end
 	addon.CreateSlider = CreateSlider
+end
+
+do -- Dropdown
+	local DropdownFrameMixin = {}
+
+	function DropdownFrameMixin:SetOnValueChangedFunc(func)
+		self.onValueChangedFunc = func
+	end
+
+	function DropdownFrameMixin:OnEnter()
+		if IsMouseButtonDown() then
+			return
+		end
+
+		if self.tooltip then
+			GameTooltip:Hide()
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:SetText(self.Label:GetText(), 1, 1, 1, true)
+			GameTooltip:AddLine(self.tooltip, 1, 0.82, 0, true)
+			GameTooltip:Show()
+		end
+
+		if self.onEnterFunc then
+			self.onEnterFunc(self)
+		end
+	end
+
+	function DropdownFrameMixin:OnLeave()
+		GameTooltip:Hide()
+
+		if self.onLeaveFunc then
+			self.onLeaveFunc(self)
+		end
+	end
+
+	function DropdownFrameMixin:SetOptions(options)
+		self.options = options
+	end
+
+	function DropdownFrameMixin:SetValue()
+		local dbValue = addon.GetDBValue(self.dbKey)
+		local setValue
+
+		for _, option in ipairs(self.options) do
+			if option.value == dbValue then
+				setValue = option.text
+			end
+		end
+
+		self:SetSelectionText(function()
+			return setValue
+		end)
+	end
+
+	function DropdownFrameMixin:SetLabel(label)
+		self.Label:SetText(label)
+		self.Label:SetWidth(154)
+	end
+
+	function DropdownFrameMixin:SetData(data)
+		self.dbKey = data.dbKey
+		self.tooltip = data.tooltip
+		self.onClickFunc = data.onClickFunc
+		self.onEnterFunc = data.onEnterFunc
+		self.onLeaveFunc = data.onLeaveFunc
+
+		if data.label then
+			return self:SetLabel(data.label)
+		else
+			return 0
+		end
+	end
+
+	-- Function to create the dropdown
+	local function CreateDropdown(parent)
+		local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+		dropdown:SetPoint("RIGHT", UIParent, "RIGHT", 0, 0)
+		dropdown:SetWidth(186)
+
+		-- Label setup
+		dropdown.Label = dropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		dropdown.Label:SetJustifyH("LEFT")
+		dropdown.Label:SetJustifyV("TOP")
+		dropdown.Label:SetTextColor(1, 1, 1) --labelcolor
+		dropdown.Label:SetPoint("RIGHT", dropdown, "LEFT", 0, 0)
+		dropdown.Label:SetFontObject("GameFontHighlightMedium")
+
+		Mixin(dropdown, DropdownFrameMixin)
+		dropdown:SetScript("OnClick", DropdownFrameMixin.OnClick)
+		dropdown:SetScript("OnEnter", DropdownFrameMixin.OnEnter)
+		dropdown:SetScript("OnLeave", DropdownFrameMixin.OnLeave)
+
+		return dropdown
+	end
+
+	addon.CreateDropdown = CreateDropdown
 end
 
 do -- Common Frame with Header (and close button)
@@ -811,6 +907,7 @@ do --EditMode
 
 		self.checkboxPool:ReleaseAll()
 		self.sliderPool:ReleaseAll()
+		self.dropdownPool:ReleaseAll()
 		self.uiPanelButtonPool:ReleaseAll()
 		self.texturePool:ReleaseAll()
 		self.fontStringPool:ReleaseAll()
@@ -860,6 +957,8 @@ do --EditMode
 					else
 						widget:SetPoint("TOPRIGHT", self, "TOPRIGHT", -leftPadding, -height)
 					end
+				elseif widget.widgetType == "Dropdown" then
+					widget:SetPoint("TOPLEFT", self, "TOPLEFT", leftPadding + 155, -height)
 				else
 					widget:SetPoint("TOPLEFT", self, "TOPLEFT", leftPadding, -height)
 				end
@@ -882,6 +981,8 @@ do --EditMode
 			widget = self.checkboxPool:Acquire()
 		elseif type == "Slider" then
 			widget = self.sliderPool:Acquire()
+		elseif type == "Dropdown" then
+			widget = self.dropdownPool:Acquire()
 		elseif type == "UIPanelButton" then
 			widget = self.uiPanelButtonPool:Acquire()
 		elseif type == "Texture" then
@@ -940,6 +1041,34 @@ do --EditMode
 		return slider
 	end
 
+	function EditModeSettingsDialogMixin:CreateDropdown(widgetData)
+		local dropdown = self:AcquireWidgetByType("Dropdown")
+
+		dropdown:SetLabel(widgetData.label)
+		dropdown:SetOptions(widgetData.options)
+		dropdown:SetOnValueChangedFunc(widgetData.onValueChangedFunc)
+		dropdown.dbKey = widgetData.dbKey
+		dropdown.tooltip = widgetData.tooltip
+
+		dropdown:SetupMenu(function(owner, rootDescription)
+			-- for _, option in ipairs(dropdown.options) do
+			for i = 1, #dropdown.options do
+				rootDescription:CreateButton(dropdown.options[i].text, function()
+					addon.SetDBValue(dropdown.dbKey, dropdown.options[i].value)
+					-- dropdown:OnClick(dropdown.options[i].value)
+					dropdown.onValueChangedFunc(dropdown.options[i].value)
+					dropdown:SetSelectionText(function()
+						return dropdown.options[i].text
+					end)
+				end)
+			end
+		end)
+
+		dropdown:SetValue()
+
+		return dropdown
+	end
+
 	function EditModeSettingsDialogMixin:CreateUIPanelButton(widgetData)
 		local button = self:AcquireWidgetByType("UIPanelButton")
 		button:SetButtonText(widgetData.label)
@@ -996,6 +1125,8 @@ do --EditMode
 					elseif widgetData.type == "RadioGroup" then
 					elseif widgetData.type == "Slider" then
 						widget = self:CreateSlider(widgetData)
+					elseif widgetData.type == "Dropdown" then
+						widget = self:CreateDropdown(widgetData)
 					elseif widgetData.type == "UIPanelButton" then
 						widget = self:CreateUIPanelButton(widgetData)
 					elseif widgetData.type == "Divider" then
@@ -1114,6 +1245,11 @@ do --EditMode
 				return addon.CreateSlider(f)
 			end
 			f.sliderPool = API.CreateObjectPool(CreateSlider)
+
+			local function CreateDropdown()
+				return addon.CreateDropdown(f)
+			end
+			f.dropdownPool = API.CreateObjectPool(CreateDropdown)
 
 			local function CreateUIPanelButton()
 				return addon.CreateUIPanelButton(f)

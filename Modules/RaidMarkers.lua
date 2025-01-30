@@ -170,7 +170,7 @@ function RM:CreateBar()
 	self:SetFrameStrata("LOW")
 	CreateBackdrop(self, "Transparent")
 
-	RM:LoadPosition(self)
+	self:LoadPosition(self)
 
 	self.buttons = {}
 	self.bar = self
@@ -217,7 +217,7 @@ function RM:CreateButtons()
 						if now - lastClear > 1 then -- limiting
 							lastClear = now
 							for i = 8, 0, -1 do
-								C_Timer.After((8 - i) * 0.34, function()
+								Ambrosia:Delay((8 - i) * 0.34, function()
 									SetRaidTarget("player", i)
 								end)
 							end
@@ -231,7 +231,7 @@ function RM:CreateButtons()
 						if now - lastClear > 1 then -- limiting
 							lastClear = now
 							for i = 8, 0, -1 do
-								E:Delay((8 - i) * 0.34, SetRaidTarget, "player", i)
+								Ambrosia:Delay((8 - i) * 0.34, SetRaidTarget, "player", i)
 							end
 						end
 					else
@@ -437,6 +437,11 @@ local function Options_Mouseover()
 	Ambrosia.db.RaidMarkerSettings.mouseOver = not Ambrosia.db.RaidMarkerSettings.mouseOver
 	RM.db.mouseOver = not RM.db.mouseOver
 	RM:ToggleSettings()
+end
+
+local function Options_ModifierKey(value)
+	RM.db.modifier = value
+	RM:UpdateButtons()
 end
 
 local function Options_BarOrientation(value)
@@ -661,6 +666,18 @@ local OPTIONS_SCHEMATIC = {
 			tooltip = "Show the bar only when hovering over it.",
 		},
 		{
+			type = "Dropdown",
+			label = "Modifier Key",
+			tooltip = "",
+			options = { -- Dropdown options
+				{ text = "Shift", value = "shift" },
+				{ text = "Ctrl", value = "ctrl" },
+				{ text = "Alt", value = "alt" },
+			},
+			onValueChangedFunc = Options_ModifierKey,
+			dbKey = "RaidMarkerSettings.modifier",
+		},
+		{
 			type = "Slider",
 			label = "Bar Orientation",
 			minValue = 1,
@@ -671,7 +688,7 @@ local OPTIONS_SCHEMATIC = {
 			dbKey = "RaidMarkerSettings.orientation",
 		},
 		{ type = "Divider" },
-		{ type = "Header", label = "Visibility" },
+		{ type = "Header", label = "Appearance" },
 		{
 			type = "Checkbox",
 			label = "Bar Backdrop",
@@ -681,7 +698,7 @@ local OPTIONS_SCHEMATIC = {
 		},
 		{
 			type = "Slider",
-			label = "Backdrop Spacing",
+			label = "    Backdrop Spacing",
 			tooltip = "Spacing between the backdrop and the buttons.",
 			minValue = 1,
 			maxValue = 30,
@@ -690,8 +707,8 @@ local OPTIONS_SCHEMATIC = {
 			formatValueFunc = Options_Slider_FormatWholeValue,
 			dbKey = "RaidMarkerSettings.backdropSpacing",
 		},
-		{ type = "Divider" },
-		{ type = "Header", label = "Buttons" },
+		-- { type = "Divider" },
+		-- { type = "Header", label = "Buttons" },
 		{
 			type = "Checkbox",
 			label = "Button Backdrop",
@@ -701,7 +718,7 @@ local OPTIONS_SCHEMATIC = {
 		},
 		{
 			type = "Slider",
-			label = "Button Size",
+			label = "    Button Size",
 			tooltip = "Size of the buttons.",
 			minValue = 15,
 			maxValue = 60,
@@ -712,7 +729,7 @@ local OPTIONS_SCHEMATIC = {
 		},
 		{
 			type = "Slider",
-			label = "Button Spacing",
+			label = "    Button Spacing",
 			tooltip = "Spacing between the buttons.",
 			minValue = 1,
 			maxValue = 30,
@@ -739,7 +756,7 @@ local OPTIONS_SCHEMATIC = {
 		},
 		{
 			type = "Slider",
-			label = "Countdown Time",
+			label = "    Countdown Time",
 			tooltip = "Countdown time in seconds.",
 			minValue = 1,
 			maxValue = 30,
@@ -748,73 +765,6 @@ local OPTIONS_SCHEMATIC = {
 			formatValueFunc = Options_Slider_FormatWholeValue,
 			dbKey = "RaidMarkerSettings.countDownTime",
 		},
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option Owned Count"],
-		-- 	onClickFunc = nil,
-		-- 	dbKey = "LootUI_ShowItemCount",
-		-- },
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option New Transmog"],
-		-- 	onClickFunc = nil,
-		-- 	dbKey = "LootUI_NewTransmogIcon",
-		-- 	tooltip = L["LootUI Option New Transmog Tooltip"]:format(
-		-- 		"|TInterface/AddOns/Plumber/Art/LootUI/NewTransmogIcon:0:0|t"
-		-- 	),
-		-- 	validityCheckFunc = Validation_TransmogInvented,
-		-- },
-
-		-- { type = "Divider" },
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option Force Auto Loot"],
-		-- 	onClickFunc = Options_ForceAutoLoot_OnClick,
-		-- 	validityCheckFunc = Options_ForceAutoLoot_ValidityCheck,
-		-- 	dbKey = "LootUI_ForceAutoLoot",
-		-- 	tooltip = L["LootUI Option Force Auto Loot Tooltip"],
-		-- 	tooltip2 = Tooltip_ManualLootInstruction,
-		-- },
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option Loot Under Mouse"],
-		-- 	onClickFunc = nil,
-		-- 	dbKey = "LootUI_LootUnderMouse",
-		-- 	tooltip = L["LootUI Option Loot Under Mouse Tooltip"],
-		-- },
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option Replace Default"],
-		-- 	onClickFunc = nil,
-		-- 	dbKey = "LootUI_ReplaceDefaultAlert",
-		-- 	tooltip = L["LootUI Option Replace Default Tooltip"],
-		-- 	validityCheckFunc = Validation_IsRetail,
-		-- },
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option Use Hotkey"],
-		-- 	onClickFunc = Options_UseHotkey_OnClick,
-		-- 	dbKey = "LootUI_UseHotkey",
-		-- 	tooltip = L["LootUI Option Use Hotkey Tooltip"],
-		-- },
-		-- {
-		-- 	type = "Keybind",
-		-- 	label = L["Take All"],
-		-- 	dbKey = "LootUI_HotkeyName",
-		-- 	tooltip = L["LootUI Option Use Hotkey Tooltip"],
-		-- 	defaultKey = "E",
-		-- },
-
-		-- { type = "Divider" },
-		-- {
-		-- 	type = "Checkbox",
-		-- 	label = L["LootUI Option Use Default UI"],
-		-- 	onClickFunc = nil,
-		-- 	dbKey = "LootUI_UseStockUI",
-		-- 	tooltip = L["LootUI Option Use Default UI Tooltip"],
-		-- 	tooltip2 = Tooltip_ManualLootInstruction,
-		-- },
-
 		{ type = "Divider" },
 		{
 			type = "UIPanelButton",
@@ -842,10 +792,6 @@ function RM:ShowOptions(state)
 		if self.OptionFrame then
 			self.OptionFrame:HideOption(self)
 		end
-
-		-- if not API.IsInEditMode() then
-		-- 	RM:SettingsDriversUpdate()
-		-- end
 	end
 end
 

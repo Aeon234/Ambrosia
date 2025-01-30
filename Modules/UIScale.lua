@@ -23,6 +23,7 @@ local function UI_Rescaler(self, event, isLogin, isReload)
 		end
 		if ResScale > 0 then
 			UIParent:SetScale(ResScale)
+			self.uiScaleCurrent = ResScale
 		end
 		if ShadowUF then
 			--PrintDebug("Reloading ShadowedUnitFrame Layout")

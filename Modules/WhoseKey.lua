@@ -4,7 +4,7 @@ local PrintDebug = function(...)
 	Ambrosia:PrintDebug(...)
 end
 
-local WK = CreateFrame("Frame")
+local WK = CreateFrame("Button", nil, UIParent)
 local World_EventListenerFrame = CreateFrame("Frame")
 
 WK.NameFrame = {}
@@ -123,23 +123,22 @@ WK.SeasonalDungeons = {
 function WK:Initialize()
 	PrintDebug("Initializing WK")
 	-- General Frame
-	self.Frame = CreateFrame("Button", nil, UIParent)
-	self.Frame:SetSize(380, 250)
-	self.Frame:Hide()
-	self.Frame:SetPropagateMouseClicks(true)
-	self.Frame:RegisterForClicks("RightButtonUp")
-	self.Frame:SetScript("OnClick", function(self, button, down)
+	self:SetSize(380, 250)
+	self:Hide()
+	self:SetPropagateMouseClicks(true)
+	self:RegisterForClicks("RightButtonUp")
+	self:SetScript("OnClick", function(self, button, down)
 		self:Hide()
-		PrintDebug("Hiding GroupKeysFrame")
+		PrintDebug("Hiding WK")
 	end)
 	-- Title
-	self.Title = self.Frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	self.Title:SetPoint("TOP", self.Frame, "TOP", 0, -10)
+	self.Title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+	self.Title:SetPoint("TOP", self, "TOP", 0, -10)
 	self.Title:SetText("Ready Check Initiated")
 	self.Title:SetFont(Ambrosia.DefaultFont, 36)
 
 	--Progress Bar
-	self.ProgressBar = CreateFrame("Frame", nil, self.Frame)
+	self.ProgressBar = CreateFrame("Frame", nil, self)
 	self.ProgressBar:SetSize(Prog_Width, Prog_Height)
 	self.ProgressBar:SetPoint("TOP", self.Title, "BOTTOM", 0, -4)
 
@@ -187,17 +186,17 @@ function WK:Initialize()
 
 	-- Frames that hold Name & Key Levels
 	for i = 1, 5 do
-		self.NameFrame[i] = CreateFrame("Frame", nil, self.Frame)
+		self.NameFrame[i] = CreateFrame("Frame", nil, self)
 		self.NameFrame[i]:SetSize(self.Title:GetUnboundedStringWidth() / 6 * 5, 36)
 		if i == 1 then
-			self.NameFrame[i]:SetPoint("TOPLEFT", self.Frame, "TOPLEFT", 10, -64)
+			self.NameFrame[i]:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -64)
 		else
 			self.NameFrame[i]:SetPoint("TOPLEFT", self.NameFrame[i - 1], "BOTTOMLEFT")
 		end
-		self.KeyLvlFrame[i] = CreateFrame("Frame", nil, self.Frame)
+		self.KeyLvlFrame[i] = CreateFrame("Frame", nil, self)
 		self.KeyLvlFrame[i]:SetSize(self.Title:GetUnboundedStringWidth() / 6, 36)
 		if i == 1 then
-			self.KeyLvlFrame[i]:SetPoint("TOPRIGHT", self.Frame, "TOPRIGHT", -14, -64)
+			self.KeyLvlFrame[i]:SetPoint("TOPRIGHT", self, "TOPRIGHT", -14, -64)
 		else
 			self.KeyLvlFrame[i]:SetPoint("TOPRIGHT", self.KeyLvlFrame[i - 1], "BOTTOMRIGHT")
 		end
@@ -214,16 +213,16 @@ function WK:Initialize()
 	end
 
 	-- Fade Out Animation
-	self.Frame.fadeOut = self.Frame:CreateAnimationGroup()
-	local fadeOut = self.Frame.fadeOut:CreateAnimation("Alpha")
+	self.fadeOut = self:CreateAnimationGroup()
+	local fadeOut = self.fadeOut:CreateAnimation("Alpha")
 	fadeOut:SetDuration(2)
 	fadeOut:SetFromAlpha(1)
 	fadeOut:SetToAlpha(0)
 	fadeOut:SetStartDelay(0)
 	fadeOut:SetSmoothing("OUT")
 
-	self.Frame.fadeOut:SetScript("OnFinished", function(self)
-		WK.Frame:Hide()
+	self.fadeOut:SetScript("OnFinished", function(self)
+		WK:Hide()
 	end)
 end
 
@@ -231,12 +230,12 @@ function WK:LoadPosition()
 	self:ClearAllPoints()
 	if self.db.PosX and self.db.PosY then
 		if self.db.PosX > 0 then
-			self.Frame:setPoint("TOPLEFT", UIParent, "BOTTOMLEFT", self.db.PosX, self.db.PosY)
+			self:setPoint("TOPLEFT", UIParent, "BOTTOMLEFT", self.db.PosX, self.db.PosY)
 		else
-			self.Frame:SetPoint("TOP", UIParent, "BOTTOM", 0, self.db.PosY)
+			self:SetPoint("TOP", UIParent, "BOTTOM", 0, self.db.PosY)
 		end
 	else
-		self.Frame:SetPoint("CENTER", UIParent, "CENTER", 0, DEFAULT_POSITION_Y)
+		self:SetPoint("CENTER", UIParent, "CENTER", 0, DEFAULT_POSITION_Y)
 	end
 end
 
@@ -357,11 +356,23 @@ function WK:ShowFrame()
 	end
 	if #RelevantKeystones > 0 then
 		self:LoadPosition()
-		self.Frame:Show()
+		self:Show()
 	end
 end
 
 -- Edit Mode
+function WK:ShowExampleText()
+	for i = 1, 5 do
+		local PlayerName = self.Name[i]
+		PlayerName:SetText(CreateAtlasMarkup(WK_DEBUG[i].playerRoleArt) .. WK_DEBUG[i].player)
+
+		local KeyLevel = self.KeyLvl[i]
+		KeyLevel:SetText("+" .. WK_DEBUG[i].level)
+	end
+	self:LoadPosition()
+	self:Show()
+end
+
 function WK:EnterEditMode()
 	if not self.enabled then
 		return
@@ -369,10 +380,11 @@ function WK:EnterEditMode()
 
 	if not self.Selection then
 		local uiName = "Whose Key"
-		local hideLabel = false
+		local hideLabel = true
 		self.Selection = Ambrosia.CreateEditModeSelection(self, uiName, hideLabel)
 	end
 
+	self:ShowExampleText()
 	self.isEditing = true
 	self:SetScript("OnUpdate", nil)
 	self.Selection:ShowHighlighted()
@@ -386,8 +398,50 @@ function WK:ExitEditMode()
 	self:Hide()
 end
 
+function WK:OnDragStart()
+	self:SetMovable(true)
+	self:SetDontSavePosition(true)
+	self:SetClampedToScreen(true)
+	self:StartMoving()
+end
+
+function WK:OnDragStop()
+	self:StopMovingOrSizing()
+
+	local centerX = self:GetCenter()
+	local uiCenter = UIParent:GetCenter()
+	local left = self:GetLeft()
+	local top = self:GetTop()
+
+	left = Round(left)
+	top = Round(top)
+
+	self:ClearAllPoints()
+
+	--Convert anchor and save position
+	if math.abs(uiCenter - centerX) <= 48 then
+		--Snap to centeral line
+		self:SetPoint("TOP", UIParent, "BOTTOM", 0, top)
+		Ambrosia.db.WhoseKeySettings.PosX = -1
+		self.db.PosX = -1
+	else
+		self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+		Ambrosia.db.WhoseKeySettings.PosX = left
+		self.db.PosX = left
+	end
+	Ambrosia.db.WhoseKeySettings.PosY = top
+	self.db.PosY = top
+
+	if self.OptionFrame and self.OptionFrame:IsOwner(self) then
+		local button = self.OptionFrame:FindWidget("ResetButton")
+		if button then
+			button:Enable()
+		end
+	end
+end
+
 function WK:IsFocused()
-	return (self.Frame:IsShown() and self.Frame:IsMouseOver())
+	return (self:IsShown() and self:IsMouseOver())
 		or (self.OptionFrame and self.OptionFrame:IsShown() and self.OptionFrame:IsMouseOver())
 end
 
@@ -430,8 +484,8 @@ function WK:ShowOptions(state)
 		if self.OptionFrame.requireResetPosition then
 			self.OptionFrame.requireResetPosition = false
 			self.OptionFrame:ClearAllPoints()
-			local top = 1 or self.Frame:GetTop()
-			local left = 1 or self.Frame:GetLeft()
+			local top = 1 or self:GetTop()
+			local left = 1 or self:GetLeft()
 			self.OptionFrame:SetPoint("CENTER", UIParent, "CENTER", 500, 100)
 		end
 	else
@@ -445,7 +499,7 @@ function WK:Enable()
 	if self.enabled then
 		return
 	end
-	if not WK.Frame then
+	if not WK.ProgressBar then
 		WK:Initialize()
 		WK:LoadPosition()
 	end
@@ -530,13 +584,13 @@ local function EventHandler(self, event, ...)
 		elapsedTime = countdownTime
 		local startTime = GetTime() -- Store the start time
 		WK.ProgressBar.bar:SetValue(elapsedTime)
-		WK.Frame:SetScript("OnUpdate", function(self, elapsed)
+		WK:SetScript("OnUpdate", function(self, elapsed)
 			local currentTime = GetTime()
 			elapsedTime = countdownTime - (currentTime - startTime) -- Calculate exact elapsed time
 			if elapsedTime <= 0 then
 				elapsedTime = 0
-				WK.Frame:SetScript("OnUpdate", nil)
-				WK.Frame.fadeOut:Play()
+				WK:SetScript("OnUpdate", nil)
+				WK.fadeOut:Play()
 				PrintDebug("Hiding WK Frame")
 			end
 			WK.ProgressBar.bar:SetValue(elapsedTime)
@@ -545,8 +599,8 @@ local function EventHandler(self, event, ...)
 		WK:ShowFrame()
 		PrintDebug("Showing WK Frame")
 	elseif event == "WORLD_STATE_TIMER_START" or event == "READY_CHECK_FINISHED" then
-		if not WK.Frame.fadeOut:IsPlaying() then
-			WK.Frame.fadeOut:Play()
+		if not WK.fadeOut:IsPlaying() then
+			WK.fadeOut:Play()
 			PrintDebug("Hiding WK Frame")
 		end
 	end

@@ -377,7 +377,7 @@ function RM:EnterEditMode()
 
 	if not self.Selection then
 		local uiName = "Raid Markers"
-		local hideLabel = false
+		local hideLabel = true
 		self.Selection = Ambrosia.CreateEditModeSelection(self, uiName, hideLabel)
 	end
 

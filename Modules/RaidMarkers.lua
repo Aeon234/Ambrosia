@@ -346,18 +346,31 @@ function RM:CreateButtons()
 end
 
 function RM:SettingsDriversUpdate()
-	if RM.OptionFrame:IsShown() then
+	if RM.OptionFrame and RM.OptionFrame:IsShown() then
 		--PrintDebug("Unregistering Driver for Editing")
 		UnregisterStateDriver(self.bar, "visibility")
 		-- self.bar:Show()
 		self:Show()
-	elseif not RM.OptionFrame:IsShown() then
+	elseif RM.OptionFrame and not RM.OptionFrame:IsShown() then
 		--PrintDebug("Registering Driver Again")
 		if self.Selection then
 			self.Selection:Hide()
 		end
 		-- self:Hide()
-
+		RegisterStateDriver(
+			self,
+			"visibility",
+			self.db.visibility == "DEFAULT" and "[noexists, nogroup] hide; show"
+				or self.db.visibility == "ALWAYS" and "[petbattle] hide; show"
+				or "[group] show; [petbattle] hide; hide"
+		)
+	end
+	if self.EditModeEnter then
+		UnregisterStateDriver(self.bar, "visibility")
+		RegisterStateDriver(self, "visibility", "[petbattle] hide; show")
+		return
+	else
+		UnregisterStateDriver(self.bar, "visibility")
 		RegisterStateDriver(
 			self,
 			"visibility",
@@ -370,7 +383,6 @@ end
 
 -- Edit Mode
 function RM:EnterEditMode()
-	RM:SettingsDriversUpdate()
 	if not self.enabled then
 		return
 	end
@@ -381,12 +393,14 @@ function RM:EnterEditMode()
 		self.Selection = Ambrosia.CreateEditModeSelection(self, uiName, hideLabel)
 	end
 
+	RM:SettingsDriversUpdate()
 	self.isEditing = true
 	self:SetScript("OnUpdate", nil)
 	self.Selection:ShowHighlighted()
 end
 
 function RM:ExitEditMode()
+	self.EditModeEnter = false
 	RM:SettingsDriversUpdate()
 	if self.Selection then
 		self.Selection:Hide()
@@ -796,13 +810,28 @@ function RM:ShowOptions(state)
 end
 
 do
+	local EDITMODE_HOOKED = false
+
+	local function EditMode_Enter()
+		if ENABLE_MODULE then
+			RM.EditModeEnter = true
+			RM:EnterEditMode()
+		end
+	end
 	local function EnableModule(state)
 		if not RM.db then
 			RM.db = Ambrosia.db.RaidMarkerSettings
 		end
 		if state then
+			ENABLE_MODULE = true
 			RM:Enable()
+			if not EDITMODE_HOOKED then
+				EDITMODE_HOOKED = true
+				EventRegistry:RegisterCallback("EditMode.Enter", EditMode_Enter)
+				EventRegistry:RegisterCallback("EditMode.Exit", RM.ExitEditMode, RM)
+			end
 		else
+			ENABLE_MODULE = false
 			RM:Disable()
 		end
 	end

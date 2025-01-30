@@ -523,6 +523,14 @@ function WK:Disable()
 end
 
 do
+	local EDITMODE_HOOKED = false
+
+	local function EditMode_Enter()
+		if ENABLE_MODULE then
+			WK:EnterEditMode()
+		end
+	end
+
 	local function EnableModule(state)
 		-- if not Details then
 		-- 	WK.enabled = false
@@ -534,8 +542,15 @@ do
 			WK.db = Ambrosia.db.WhoseKeySettings
 		end
 		if state then
+			ENABLE_MODULE = true
 			WK:Enable()
+			if not EDITMODE_HOOKED then
+				EDITMODE_HOOKED = true
+				EventRegistry:RegisterCallback("EditMode.Enter", EditMode_Enter)
+				EventRegistry:RegisterCallback("EditMode.Exit", WK.ExitEditMode, WK)
+			end
 		else
+			ENABLE_MODULE = false
 			WK:Disable()
 		end
 	end

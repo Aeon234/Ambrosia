@@ -692,6 +692,18 @@ local OPTIONS_SCHEMATIC = {
 			dbKey = "RaidMarkerSettings.modifier",
 		},
 		{
+			type = "Dropdown",
+			label = "Visibility",
+			tooltip = "Default behavior displays the raid markers bar while having a target when not in a group.\nIn a group, the bar is always visible.",
+			options = { -- Dropdown options
+				{ text = "Always", value = "ALWAYS" },
+				{ text = "Default", value = "DEFAULT" },
+				{ text = "In party", value = "IN PARTY" },
+			},
+			onValueChangedFunc = Options_ModifierKey,
+			dbKey = "RaidMarkerSettings.visibility",
+		},
+		{
 			type = "Slider",
 			label = "Bar Orientation",
 			minValue = 1,

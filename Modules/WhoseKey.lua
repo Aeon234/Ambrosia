@@ -614,7 +614,7 @@ local function EventHandler(self, event, ...)
 		WK:ShowFrame()
 		PrintDebug("Showing WK Frame")
 	elseif event == "WORLD_STATE_TIMER_START" or event == "READY_CHECK_FINISHED" then
-		if not WK.fadeOut:IsPlaying() and WK.Frame:IsShown() then
+		if not WK.fadeOut:IsPlaying() and WK:IsShown() then
 			WK.fadeOut:Play()
 			PrintDebug("Hiding WK Frame")
 		end

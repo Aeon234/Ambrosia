@@ -1,4 +1,4 @@
-local _, Ambrosia = ...
+local addonName, Ambrosia = ...
 local API = Ambrosia.API
 local tinsert = table.insert
 local CreateFrame = CreateFrame
@@ -30,18 +30,22 @@ Config.modules = {}
 Config:Hide()
 
 local ScrollFrame = CreateFrame("Frame", nil, Config)
-ScrollFrame:SetPoint("TOPLEFT", Config, "TOPLEFT", 0, -16)
+ScrollFrame:SetPoint("TOPLEFT", Config, "TOPLEFT", 0, -26)
 ScrollFrame:SetPoint("BOTTOMLEFT", Config, "BOTTOMLEFT", 0, 0)
 ScrollFrame:SetWidth(LEFT_SECTOR_WIDTH)
 Config.ScrollFrame = ScrollFrame
 
 local title = C_AddOns.GetAddOnMetadata("Ambrosia", "Title")
 local addonVersion = C_AddOns.GetAddOnMetadata("Ambrosia", "Version")
-local OptionsTitle = Config:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-OptionsTitle:SetPoint("TOPLEFT", 8, -5)
-OptionsTitle:SetText("Ambrosia")
+-- local OptionsTitle = Config:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+local OptionsTitle = Config:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+-- OptionsTitle:SetPoint("TOPLEFT", 8, -5)
+OptionsTitle:SetPoint("TOPLEFT", 10, -15)
+OptionsTitle:SetText(addonName)
 -- OptionsTitle:SetText(title)
-OptionsTitle:SetFont(Ambrosia.DefaultFont, 20)
+-- OptionsTitle:SetFont(Ambrosia.DefaultFont, 20)
+local font, size, flags = OptionsTitle:GetFont()
+-- OptionsTitle:SetFont(font, 26, flags)
 
 do
 	local OFFSET_PER_SCROLL = (BUTTON_HEIGHT + OPTION_GAP_Y) * 2
@@ -504,13 +508,14 @@ local function CreateUI()
 		end
 	end
 
-	--Temporary "About" Tab
+	-- Version Text
 	local VersionText = container:CreateFontString(nil, "OVERLAY", "GameFontNormal") --GameFontNormal (ObjectiveFont), GameTooltipTextSmall
+	local Peterodox = "Options Designed by Peterodox"
 	VersionText:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -PADDING, PADDING)
 	VersionText:SetTextColor(0.24, 0.24, 0.24)
 	VersionText:SetJustifyH("RIGHT")
 	VersionText:SetJustifyV("BOTTOM")
-	VersionText:SetText(addonVersion)
+	VersionText:SetText(addonVersion .. "\n" .. Peterodox)
 
 	db.settingsOpenTime = time()
 

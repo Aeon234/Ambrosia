@@ -201,6 +201,6 @@ ADDON_LOADED:SetScript("OnEvent", function(self, event, ...)
 	if name == addonName then
 		self:UnregisterEvent(event)
 		Ambrosia:LoadDatabase()
-		Ambrosia:PrintDebug("Unregistering " .. event)
+		Ambrosia:PrintDebug("Database Loaded")
 	end
 end)

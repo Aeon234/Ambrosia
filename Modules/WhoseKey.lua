@@ -121,7 +121,6 @@ WK.SeasonalDungeons = {
 }
 
 function WK:Initialize()
-	PrintDebug("Initializing WK")
 	-- General Frame
 	self:SetSize(380, 250)
 	self:Hide()
@@ -129,7 +128,7 @@ function WK:Initialize()
 	self:RegisterForClicks("RightButtonUp")
 	self:SetScript("OnClick", function(self, button, down)
 		self:Hide()
-		PrintDebug("Hiding WK")
+		-- PrintDebug("Hiding WK")
 	end)
 	-- Title
 	self.Title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -508,9 +507,9 @@ function WK:Enable()
 		World_EventListenerFrame:RegisterEvent("READY_CHECK")
 		World_EventListenerFrame:RegisterEvent("READY_CHECK_FINISHED")
 		World_EventListenerFrame:RegisterEvent("WORLD_STATE_TIMER_START")
-		PrintDebug("Registering READY_CHECK, READY_CHECK_FINISHED WORLD_STATE_TIMER_START")
+		-- PrintDebug("Registering READY_CHECK, READY_CHECK_FINISHED WORLD_STATE_TIMER_START")
 	else
-		PrintDebug("Details not detected")
+		-- PrintDebug("Details not detected")
 	end
 	self.enabled = true
 end
@@ -579,16 +578,16 @@ do
 end
 
 local function EventHandler(self, event, ...)
-	PrintDebug(event .. " triggered")
+	-- PrintDebug(event .. " triggered")
 	if event == "PLAYER_ENTERING_WORLD" then
 		if Details then
 			self:RegisterEvent("READY_CHECK")
 			self:RegisterEvent("READY_CHECK_FINISHED")
 			self:RegisterEvent("WORLD_STATE_TIMER_START")
-			PrintDebug("Registering READY_CHECK, READY_CHECK_FINISHED WORLD_STATE_TIMER_START")
+			-- PrintDebug("Registering READY_CHECK, READY_CHECK_FINISHED WORLD_STATE_TIMER_START")
 		else
 			self:UnregisterAllEvents()
-			PrintDebug("Unregistering all events due to missing Details! addon")
+			-- PrintDebug("Unregistering all events due to missing Details! addon")
 			return
 		end
 	end
@@ -606,17 +605,17 @@ local function EventHandler(self, event, ...)
 				elapsedTime = 0
 				WK:SetScript("OnUpdate", nil)
 				WK.fadeOut:Play()
-				PrintDebug("Hiding WK Frame")
+				-- PrintDebug("Hiding WK Frame")
 			end
 			WK.ProgressBar.bar:SetValue(elapsedTime)
 			WK.ProgressBar.text:SetText(string.format("%.1f", elapsedTime))
 		end)
 		WK:ShowFrame()
-		PrintDebug("Showing WK Frame")
+		-- PrintDebug("Showing WK Frame")
 	elseif event == "WORLD_STATE_TIMER_START" or event == "READY_CHECK_FINISHED" then
 		if not WK.fadeOut:IsPlaying() and WK:IsShown() then
 			WK.fadeOut:Play()
-			PrintDebug("Hiding WK Frame")
+			-- PrintDebug("Hiding WK Frame")
 		end
 	end
 end

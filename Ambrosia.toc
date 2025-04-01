@@ -21,26 +21,7 @@ Settings.lua
 
 #Modules
 Modules\UIScale.lua
-Modules\MinimapButtons.lua
 Modules\InstanceDifficulty.lua
 Modules\RaidMarkers.lua
 Modules\WorldMarkerCycler.lua
 Modules\WhoseKey.lua
-# Modules\test.lua
-
-#AMT_Frames.xml
-
-#Core
-#Core\Database.lua
-#Core\API.lua
-#Core\SharedWidgets.lua
-#Core\Util.lua
-
-#Config.lua
-#Main.lua
-#Display.lua
-
-#Modules
-#Modules\KeyEvents.lua
-#Modules\WorldMarkerCycler.lua
-#Modules\AutoResponse.lua

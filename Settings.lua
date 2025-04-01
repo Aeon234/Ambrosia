@@ -371,7 +371,7 @@ local function CreateUI()
 
 	local function Checkbox_OnEnter(self)
 		description:SetText(self.data.description)
-		preview:SetTexture("Interface/AddOns/Ambrosia/Media/Art/Settings/Preview_" .. self.dbKey)
+		preview:SetTexture("Interface/AddOns/Ambrosia/Media/Art/Modules/Preview_" .. self.dbKey)
 		SelectionTexture:ClearAllPoints()
 		SelectionTexture:SetPoint("LEFT", self, "LEFT", -PADDING, 0)
 		SelectionTexture:Show()
@@ -630,6 +630,10 @@ function AMB_DebugCommands(msg)
 		end
 	elseif msg == "wm" and not InCombatLockdown() then
 		Ambrosia:WorldMarkerCycler_ToggleConfig()
+	elseif msg == "rm" and not InCombatLockdown() then
+		Ambrosia:RaidMarkers_ToggleConfig()
+	elseif msg == "suf" then
+		Ambrosia:SUFreload()
 	else
 		Settings.OpenToCategory(Ambrosia_SettingsID)
 	end

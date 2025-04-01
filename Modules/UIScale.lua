@@ -5,6 +5,10 @@ local PrintDebug = function(...)
 end
 
 local UI_RescalerEvent = CreateFrame("Frame")
+local ElvUI = ElvUI
+local ShadowUF = ShadowUF
+local Grid2 = Grid2
+local Grid2Layout = Grid2Layout
 
 local function UI_Rescaler(self, event, isLogin, isReload)
 	if ElvUI then
@@ -98,4 +102,16 @@ do
 	}
 
 	Ambrosia.Config:AddModule(moduleData)
+end
+
+function Ambrosia:SUFreload()
+	if ShadowUF then
+		--PrintDebug("Reloading ShadowedUnitFrame Layout")
+		ShadowUF.Layout:Reload()
+		if Grid2 then
+			--PrintDebug("Reloading Grid2 Layout")
+			Grid2Layout:RestorePositions()
+		end
+		PrintDebug("SUF Reloaded")
+	end
 end

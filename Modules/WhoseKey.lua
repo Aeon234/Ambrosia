@@ -188,14 +188,14 @@ function WK:Initialize()
 		self.NameFrame[i] = CreateFrame("Frame", nil, self)
 		self.NameFrame[i]:SetSize(self.Title:GetUnboundedStringWidth() / 6 * 5, 36)
 		if i == 1 then
-			self.NameFrame[i]:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -64)
+			self.NameFrame[i]:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -68)
 		else
 			self.NameFrame[i]:SetPoint("TOPLEFT", self.NameFrame[i - 1], "BOTTOMLEFT")
 		end
 		self.KeyLvlFrame[i] = CreateFrame("Frame", nil, self)
 		self.KeyLvlFrame[i]:SetSize(self.Title:GetUnboundedStringWidth() / 6, 36)
 		if i == 1 then
-			self.KeyLvlFrame[i]:SetPoint("TOPRIGHT", self, "TOPRIGHT", -14, -64)
+			self.KeyLvlFrame[i]:SetPoint("TOPRIGHT", self, "TOPRIGHT", -14, -68)
 		else
 			self.KeyLvlFrame[i]:SetPoint("TOPRIGHT", self.KeyLvlFrame[i - 1], "BOTTOMRIGHT")
 		end

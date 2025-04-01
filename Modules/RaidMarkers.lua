@@ -301,7 +301,8 @@ function RM:CreateButtons()
 			tooltipText =
 				format("%s\n%s", "Left Click to ready check.", "Right click to toggle advanced combat logging.")
 		elseif i == 11 then
-			tooltipText = format("%s\n%s", "Left Click to start count down.", "Right click to stop count down.")
+			tooltipText = format("%s\n%s", "Left Click to start count down.", "Right Click to stop count down."
+)
 		end
 
 		local tooltipTitle = i <= 9 and "Raid Markers" or "Raid Utility"
@@ -352,11 +353,10 @@ function RM:SettingsDriversUpdate()
 		-- self.bar:Show()
 		self:Show()
 	elseif RM.OptionFrame and not RM.OptionFrame:IsShown() then
-		--PrintDebug("Registering Driver Again")
+		PrintDebug("Registering Driver Again")
 		if self.Selection then
 			self.Selection:Hide()
 		end
-		-- self:Hide()
 		RegisterStateDriver(
 			self,
 			"visibility",
@@ -364,11 +364,6 @@ function RM:SettingsDriversUpdate()
 				or self.db.visibility == "ALWAYS" and "[petbattle] hide; show"
 				or "[group] show; [petbattle] hide; hide"
 		)
-	end
-	if self.EditModeEnter then
-		UnregisterStateDriver(self.bar, "visibility")
-		RegisterStateDriver(self, "visibility", "[petbattle] hide; show")
-		return
 	else
 		UnregisterStateDriver(self.bar, "visibility")
 		RegisterStateDriver(
@@ -818,6 +813,14 @@ function RM:ShowOptions(state)
 		if self.OptionFrame then
 			self.OptionFrame:HideOption(self)
 		end
+	end
+end
+
+function Ambrosia:RaidMarkers_ToggleConfig()
+	if RM.OptionFrame and RM.OptionFrame:IsShown() then
+		RM:ShowOptions(false)
+	else
+		RM:ShowOptions(true)
 	end
 end
 

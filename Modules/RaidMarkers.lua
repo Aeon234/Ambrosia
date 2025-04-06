@@ -301,8 +301,7 @@ function RM:CreateButtons()
 			tooltipText =
 				format("%s\n%s", "Left Click to ready check.", "Right click to toggle advanced combat logging.")
 		elseif i == 11 then
-			tooltipText = format("%s\n%s", "Left Click to start count down.", "Right Click to stop count down."
-)
+			tooltipText = format("%s\n%s", "Left Click to start count down.", "Right Click to stop count down.")
 		end
 
 		local tooltipTitle = i <= 9 and "Raid Markers" or "Raid Utility"

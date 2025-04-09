@@ -93,7 +93,7 @@ do
 		description = (
 			ElvUI
 				and "|cffff2020Automatically disabled since ElvUI is enabled. ElvUI provides its own Scaling Features.|r\n\nAutomatically adjust the UI Scale so it's pixel perfect to your resolution. Will also refresh the layouts of Shadowed Unit Frames and Grid2 if enabled."
-			or "Automatically adjust the UI Scale so it's pixel perfect to your resolution. Will also refresh the layouts of Shadowed Unit Frames and Grid2 if enabled.\n\nAutomatically disabled if ElvUI is enabled."
+			or "Automatically adjust the UI Scale so it's pixel perfect to your resolution. Will also refresh the layouts of Shadowed Unit Frames and Grid2 if enabled.\nType '/amb suf' to reload SUF Layout.\n\nAutomatically disabled if ElvUI is enabled."
 		),
 		toggleFunc = EnableModule,
 		categoryID = 1,

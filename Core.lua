@@ -112,6 +112,7 @@ Ambrosia.DefaultValues = {
 		PosX = nil,
 		PosY = nil,
 	},
+	AddonProfiler = true,
 }
 Ambrosia.API = {} --Custom APIs used by this addon
 Ambrosia.DefaultFont = "Interface/AddOns/Ambrosia/Media/Expressway.TTF"

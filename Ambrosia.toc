@@ -1,4 +1,4 @@
-## Interface: 110007
+## Interface: 110107
 ## Title:|cff18a8ffAmbrosia|r
 ## Notes: Provides various in-game quality of life enhancements.
 ## Author: Aeon
@@ -25,4 +25,4 @@ Modules\InstanceDifficulty.lua
 Modules\RaidMarkers.lua
 Modules\WorldMarkerCycler.lua
 Modules\WhoseKey.lua
-Modules\AddonProfiler.lua
+# Modules\AddonProfiler.lua

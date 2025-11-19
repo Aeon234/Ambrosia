@@ -8,7 +8,6 @@ end
 local WorldMarkerCycler = CreateFrame("Frame")
 
 -- local order = { 5, 6, 3, 2, 7, 1, 4, 8 }
--- local order = { 5, 6, 3, 2 } --Broodtwister
 local order = {}
 local Placer_Button
 function WorldMarkerCycler:Placer_Init()

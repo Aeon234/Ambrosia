@@ -25,4 +25,3 @@ Modules\InstanceDifficulty.lua
 Modules\RaidMarkers.lua
 Modules\WorldMarkerCycler.lua
 Modules\WhoseKey.lua
-# Modules\AddonProfiler.lua

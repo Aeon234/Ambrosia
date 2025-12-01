@@ -2,7 +2,7 @@
 ## Title:Ambrosia
 ## Notes: Provides various in-game quality of life enhancements.
 ## Author: Aeon
-## Version: 1.0.0
+## Version: @project-version@
 
 ## SavedVariables: Ambrosia_DB
 ## OptionalDeps: ElvUI, ShadowedUnitFrames, Grid2, Details

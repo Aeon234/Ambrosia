@@ -10,15 +10,22 @@ local ShadowUF = ShadowUF
 local Grid2 = Grid2
 local Grid2Layout = Grid2Layout
 local CurrentScale = 0
+local REGISTERED_EVENTS = {
+	PLAYER_ENTERING_WORLD = true,
+	UI_SCALE_CHANGED = true,
+	DISPLAY_SIZE_CHANGED = true,
+	EDIT_MODE_LAYOUTS_UPDATED = true,
+	PLAYER_REGEN_ENABLED = true,
+}
 
-local function LogonRescaler(self, event, isLogin, isReload)
+local function LogonRescaler(self, event, isLogin, isReload, ...)
 	if ElvUI then
 		UIScale:Disable()
 		return
 	end
 	if InCombatLockdown() then
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
-	elseif isLogin or isReload or event == "PLAYER_REGEN_ENABLED" or event == "SET_SCALE" then
+	elseif isLogin or isReload or event == "SET_SCALE" or REGISTERED_EVENTS[event] then
 		CurrentScale = Ambrosia.db.UIScaleNum
 		if CurrentScale > 0 then
 			UIParent:SetScale(CurrentScale)
@@ -97,7 +104,7 @@ function UIScale:Enable()
 		return
 	end
 
-	LogonRescaler(UIScale, "MANUAL_TOGGLE", _, _)
+	LogonRescaler(UIScale, "SET_SCALE", _, _)
 
 	self.enabled = true
 end
@@ -176,7 +183,11 @@ do
 			return
 		end
 		if state then
-			UIScale:RegisterEvent("PLAYER_ENTERING_WORLD")
+			for event, enabled in pairs(REGISTERED_EVENTS) do
+				if enabled then
+					UIScale:RegisterEvent(event)
+				end
+			end
 			UIScale:SetScript("OnEvent", LogonRescaler)
 			LogonRescaler(UIScale, "SET_SCALE", _, _)
 		else
@@ -200,7 +211,7 @@ do
 	end
 
 	local moduleData = {
-		name = (ElvUI and "|cffb0b0b0Pixel Perfect UI Scale|r" or "Pixel Perfect UI Scale"),
+		name = (ElvUI and "|cffb0b0b0UI Scale Modification|r" or "UI Scale Modification"),
 		dbKey = "UIScale",
 		description = (
 			ElvUI

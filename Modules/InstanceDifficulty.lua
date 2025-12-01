@@ -17,17 +17,12 @@ local IsInInstance = IsInInstance
 local C_AddOns_IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local C_ChallengeMode_GetActiveKeystoneInfo = C_ChallengeMode.GetActiveKeystoneInfo
 
-local ExampleTextTimer
-
 local ID = CreateFrame("Frame", "InstanceDifficultyFrame", _G.Minimap)
 ID:SetScript("OnEvent", function(self, event, ...)
-	-- PrintDebug(tostring(event) .. " event triggered")
 	self:UpdateFrame()
 end)
 
 function ID:UpdateFrame()
-	--PrintDebug("Frame Updater ran")
-
 	local inInstance, instanceType = IsInInstance()
 	local difficulty = select(3, GetInstanceInfo())
 	local numplayers = select(9, GetInstanceInfo())
@@ -55,7 +50,7 @@ function ID:UpdateFrame()
 	self.frame:SetShown(inInstance)
 end
 
-function ID:SettingsExampleTest()
+function ID:SettingsExampleTest(state)
 	local inInstance, instanceType = IsInInstance()
 
 	if self.frame:IsShown() and inInstance then
@@ -65,13 +60,13 @@ function ID:SettingsExampleTest()
 	else
 		self.frame.text:SetText("|cffff3860M+|r21")
 		self.frame:Show()
-		if ExampleTextTimer then
-			ExampleTextTimer:Cancel()
-		end
-		ExampleTextTimer = C_Timer.NewTimer(2, function()
-			self.frame:Hide()
-			ExampleTextTimer = nil
-		end)
+		-- if ExampleTextTimer then
+		-- 	ExampleTextTimer:Cancel()
+		-- end
+		-- ExampleTextTimer = C_Timer.NewTimer(10, function()
+		-- 	self.frame:Hide()
+		-- 	ExampleTextTimer = nil
+		-- end)
 	end
 end
 
@@ -132,8 +127,6 @@ function ID:GetTextForDifficulty(difficulty, useDefault)
 end
 
 function ID:ConstructFrame()
-	--PrintDebug("Frame Constructor ran")
-
 	if not self.db then
 		return
 	end
@@ -153,7 +146,6 @@ function ID:ConstructFrame()
 end
 
 function ID:LoadPosition()
-	--PrintDebug("Position Loader ran")
 	if not self.db then
 		return
 	end
@@ -163,11 +155,19 @@ function ID:LoadPosition()
 	difficulty:ClearAllPoints()
 	if self.db.align == "LEFT" then
 		-- difficulty:SetPoint("TOPLEFT", _G.MinimapCluster, "TOPLEFT", 40, -20)
-		difficulty:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, -15)
+		difficulty:SetPoint("TOPLEFT", _G.MinimapCluster.MinimapContainer, "TOPLEFT", 0, 0)
+		-- difficulty:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, -15)
 	elseif self.db.align == "RIGHT" then
 		difficulty:ClearAllPoints()
 		difficulty:SetPoint("TOPRIGHT", anchor, "TOPRIGHT", 0, -15)
 	end
+	difficulty:SetPoint(
+		self.db.align,
+		_G.MinimapCluster.MinimapContainer,
+		self.db.align,
+		self.db.offsetX,
+		self.db.offsetY
+	)
 end
 
 function ID:ADDON_LOADED(_, addon)
@@ -185,11 +185,9 @@ end
 ID.GROUP_ROSTER_UPDATE = Ambrosia.DelvesEventFix(ID.UpdateFrame)
 
 function ID:SettingsUpdate()
-	--PrintDebug("Settings Updated")
 	if not self.db then
 		return
 	end
-	ID:SettingsExampleTest()
 
 	self:LoadPosition()
 	self.text:SetFont(Ambrosia.DefaultFont, self.db.fontSize, self.db.fontOutline)
@@ -197,17 +195,33 @@ end
 
 local function Options_IDAlign(value)
 	Ambrosia.db.InstanceDifficultySettings.align = value
-	ID.db.align = value
+	Ambrosia.db.InstanceDifficultySettings.offsetX = 0
+	Ambrosia.db.InstanceDifficultySettings.offsetY = 0
+	if ID.OptionFrame then
+		local sx = ID.OptionFrame:FindWidget("ID_OffsetX")
+		if sx and sx.SetValue then
+			sx:SetValue(0)
+		end
+		local sy = ID.OptionFrame:FindWidget("ID_OffsetY")
+		if sy and sy.SetValue then
+			sy:SetValue(0)
+		end
+	end
 	ID:SettingsUpdate()
-end
-
-local function Options_Options_IDAlign_FormatValue(value)
-	return value == 1 and "LEFT" or "RIGHT"
 end
 
 local function Options_IDTextSize(value)
 	Ambrosia.db.InstanceDifficultySettings.fontSize = value
-	ID.db.fontSize = value
+	ID:SettingsUpdate()
+end
+
+local function Options_IDOffsetX(value)
+	Ambrosia.db.InstanceDifficultySettings.offsetX = value
+	ID:SettingsUpdate()
+end
+
+local function Options_IDOffsetY(value)
+	Ambrosia.db.InstanceDifficultySettings.offsetY = value
 	ID:SettingsUpdate()
 end
 
@@ -223,8 +237,10 @@ local OPTIONS_SCHEMATIC = {
 			label = "Align",
 			tooltip = "Align the text to the top left or top right of the frame.",
 			options = { -- Dropdown options
-				{ text = "Left", value = "LEFT" },
-				{ text = "Right", value = "RIGHT" },
+				{ text = "Top Left", value = "TOPLEFT" },
+				{ text = "Top Right", value = "TOPRIGHT" },
+				{ text = "Bottom Left", value = "BOTTOMLEFT" },
+				{ text = "Bottom Right", value = "BOTTOMRIGHT" },
 			},
 			onValueChangedFunc = Options_IDAlign,
 			dbKey = "InstanceDifficultySettings.align",
@@ -232,13 +248,34 @@ local OPTIONS_SCHEMATIC = {
 		{
 			type = "Slider",
 			label = "Font Size",
-			tooltip = "Align the text to the top left or top right of the frame.",
 			minValue = 5,
 			maxValue = 60,
 			valueStep = 1,
 			onValueChangedFunc = Options_IDTextSize,
 			formatValueFunc = Options_Slider_FormatWholeValue,
 			dbKey = "InstanceDifficultySettings.fontSize",
+		},
+		{
+			type = "Slider",
+			label = "Offset X",
+			minValue = -50,
+			maxValue = 50,
+			valueStep = 1,
+			onValueChangedFunc = Options_IDOffsetX,
+			formatValueFunc = Options_Slider_FormatWholeValue,
+			dbKey = "InstanceDifficultySettings.offsetX",
+			widgetKey = "ID_OffsetX",
+		},
+		{
+			type = "Slider",
+			label = "Offset Y",
+			minValue = -50,
+			maxValue = 50,
+			valueStep = 1,
+			onValueChangedFunc = Options_IDOffsetY,
+			formatValueFunc = Options_Slider_FormatWholeValue,
+			dbKey = "InstanceDifficultySettings.offsetY",
+			widgetKey = "ID_OffsetY",
 		},
 	},
 }
@@ -248,6 +285,10 @@ function ID:ShowOptions(state)
 		local forceUpdate = true
 		self.OptionFrame = Ambrosia.SetupSettingsDialog(self, OPTIONS_SCHEMATIC, forceUpdate)
 		self.OptionFrame:Show()
+		self.OptionFrame:SetScript("OnHide", function()
+			ID:SettingsExampleTest(false)
+		end)
+		ID:SettingsExampleTest(state)
 		if self.OptionFrame.requireResetPosition then
 			self.OptionFrame.requireResetPosition = false
 			self.OptionFrame:ClearAllPoints()
@@ -289,17 +330,14 @@ function ID:Enable()
 	self:UpdateFrame()
 
 	self.enabled = true
-	--PrintDebug("Instance Difficulty Enabled")
 end
 
 function ID:Disable()
 	if self.enabled then
 		Ambrosia:ReloadPopUp()
 		self.db.enable = false
-		-- self:ToggleSettings()
 	end
 	self.enabled = false
-	--PrintDebug("Instance Difficulty Disabled")
 end
 
 do
@@ -333,7 +371,7 @@ do
 		description = "Reskin the instance difficulty indicator in text style.",
 		toggleFunc = EnableModule,
 		categoryID = 1,
-		uiOrder = 3,
+		uiOrder = 4,
 		optionToggleFunc = OptionToggle_OnClick,
 	}
 

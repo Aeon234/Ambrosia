@@ -10,7 +10,6 @@
 ## X-Curse-Project-ID: 1396172
 ## X-Wago-ID: 
 
-# IconTexture: 5764916
 ## IconTexture: Interface\Addons\Ambrosia\Media\Art\Ambrosia.blp
 ## Category: User Interface
 ## Category-deDE: Benutzerinterface

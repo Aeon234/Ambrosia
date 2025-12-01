@@ -45,7 +45,7 @@ do -- Checkbox
 		if self.tooltip then
 			GameTooltip:Hide()
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(self.Label:GetText(), 1, 1, 1, true)
+			GameTooltip:SetText(self.Label:GetText(), 1, 1, 1, 1, true)
 			GameTooltip:AddLine(self.tooltip, 1, 0.82, 0, true)
 			GameTooltip:Show()
 		end
@@ -455,7 +455,7 @@ do --Slider
 			local f = GameTooltip
 			f:Hide()
 			f:SetOwner(self, "ANCHOR_RIGHT")
-			f:SetText(self.Label:GetText(), 1, 1, 1, true)
+			f:SetText(self.Label:GetText(), 1.0, 1.0, 1.0, 1, true)
 			f:AddLine(self.tooltip, 1, 0.82, 0, true)
 			if self.tooltip2 then
 				local tooltip2
@@ -471,6 +471,9 @@ do --Slider
 			end
 			f:Show()
 		end
+		if self.onEnterFunc then
+			self.onEnterFunc(self)
+		end
 	end
 
 	function SliderFrameMixin:OnLeave()
@@ -482,7 +485,7 @@ do --Slider
 	end
 
 	local function CreateSlider(parent)
-		local f = CreateFrame("Frame", nil, parent, "PlumberMinimalSliderWithControllerTemplate")
+		local f = CreateFrame("Frame", nil, parent, "AmbrosiaMinimalSliderWithControllerTemplate")
 		Mixin(f, SliderFrameMixin)
 
 		f.Slider.ValueText = f.RightText
@@ -512,7 +515,7 @@ do -- Dropdown
 		if self.tooltip then
 			GameTooltip:Hide()
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(self.Label:GetText(), 1, 1, 1, true)
+			GameTooltip:SetText(self.Label:GetText(), 1, 1, 1, 1, true)
 			GameTooltip:AddLine(self.tooltip, 1, 0.82, 0, true)
 			GameTooltip:Show()
 		end

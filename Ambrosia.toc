@@ -1,13 +1,28 @@
-## Interface: 110107
-## Title:|cff18a8ffAmbrosia|r
+## Interface: 120000
+## Title:Ambrosia
 ## Notes: Provides various in-game quality of life enhancements.
 ## Author: Aeon
 ## Version: 1.0.0
+
 ## SavedVariables: Ambrosia_DB
-## IconTexture: Interface\Addons\Ambrosia\Media\Art\Ambrosia
+## OptionalDeps: ElvUI, ShadowedUnitFrames, Grid2, Details
+
 ## X-Curse-Project-ID: 
 ## X-Wago-ID: 
-## OptionalDeps: ElvUI, ShadowedUnitFrames, Grid2, Details
+
+# IconTexture: 5764916
+## IconTexture: Interface\Addons\Ambrosia\Media\Art\Ambrosia.blp
+## Category: User Interface
+## Category-deDE: Benutzerinterface
+## Category-esES: Interfaz de usuario
+## Category-esMX: Interfaz de usuario
+## Category-frFR: Interface utilisateur
+## Category-itIT: Interfaccia utente
+## Category-koKR: 사용자 인터페이스
+## Category-ptBR: Interface do usuário
+## Category-ruRU: Интерфейс пользователя
+## Category-zhCN: 用户界面
+## Category-zhTW: 使用者介面
 
 #Core
 Core.lua
@@ -15,14 +30,15 @@ Core.lua
 #Util
 Util\Util.lua
 Util\API.lua
-Util\SharedWidgets.lua
+Util\SharedWidgets.xml
 
 Settings.lua
 
 #Modules
 Modules\UIScale.lua
+Modules\EscapeMenuScale.lua
+Modules\CantRelease.lua
 Modules\InstanceDifficulty.lua
 Modules\RaidMarkers.lua
 Modules\WorldMarkerCycler.lua
 Modules\WhoseKey.lua
-# Modules\AddonProfiler.lua

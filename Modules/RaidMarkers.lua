@@ -210,9 +210,9 @@ function RM:CreateButtons()
 			button:SetAttribute("type", "click")
 			if not self.db.inverse then
 				button:SetScript("OnClick", function(self)
-					if _G[format("Is%sKeyDown", RM.modifierString)]() then
+					if _G[format("Is%sKeyDown", RM.modifierString)]() and not InCombatLockdown() then
 						ClearRaidMarker()
-					else
+					elseif not InCombatLockdown() then
 						local now = GetTime()
 						if now - lastClear > 1 then -- limiting
 							lastClear = now
@@ -226,7 +226,7 @@ function RM:CreateButtons()
 				end)
 			else
 				button:SetScript("OnClick", function(self)
-					if _G[format("Is%sKeyDown", RM.modifierString)]() then
+					if _G[format("Is%sKeyDown", RM.modifierString)]() and not InCombatLockdown() then
 						local now = GetTime()
 						if now - lastClear > 1 then -- limiting
 							lastClear = now
@@ -234,7 +234,7 @@ function RM:CreateButtons()
 								Ambrosia:Delay((8 - i) * 0.34, SetRaidTarget, "player", i)
 							end
 						end
-					else
+					elseif not InCombatLockdown() then
 						ClearRaidMarker()
 					end
 				end)
@@ -256,7 +256,7 @@ function RM:CreateButtons()
 				button:SetAttribute("macrotext2", "/dbm pull 0")
 			else
 				button:SetAttribute("macrotext1", _G.SLASH_COUNTDOWN1 .. " " .. RM.db.countDownTime)
-				button:SetAttribute("macrotext2", _G.SLASH_COUNTDOWN1 .. " " .. -1)
+				button:SetAttribute("macrotext2", _G.SLASH_COUNTDOWN1 .. " " .. 0)
 			end
 		end
 

@@ -17,7 +17,7 @@ local LEFT_SECTOR_WIDTH = math.floor(0.618 * FRAME_WIDTH + 0.5)
 
 local CATEGORY_ORDER = {
 	[1] = "General UI Enhancements",
-	[2] = "Mythic+ & Raid",
+	[2] = "Raid & Mythic+",
 }
 local DEFAULT_COLLAPSED_CATEGORY = {}
 -- DEFAULT_COLLAPSED_CATEGORY[10020000] = true -- If we want want to start a category collapsed, change 10020000 to the category #
@@ -37,15 +37,10 @@ Config.ScrollFrame = ScrollFrame
 
 local title = C_AddOns.GetAddOnMetadata("Ambrosia", "Title")
 local addonVersion = C_AddOns.GetAddOnMetadata("Ambrosia", "Version")
--- local OptionsTitle = Config:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 local OptionsTitle = Config:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
--- OptionsTitle:SetPoint("TOPLEFT", 8, -5)
 OptionsTitle:SetPoint("TOPLEFT", 10, -15)
 OptionsTitle:SetText(addonName)
--- OptionsTitle:SetText(title)
--- OptionsTitle:SetFont(Ambrosia.DefaultFont, 20)
 local font, size, flags = OptionsTitle:GetFont()
--- OptionsTitle:SetFont(font, 26, flags)
 
 do
 	local OFFSET_PER_SCROLL = (BUTTON_HEIGHT + OPTION_GAP_Y) * 2
